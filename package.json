@@ -1,0 +1,39 @@
+{
+    "name": "fcms",
+    "version": "2.0.1",
+    "description": "FAST Content Management System",
+    "author": "Maximus",
+    "license": "ISC",
+    "devDependencies": {
+        "beepbeep": "^1.2.0",
+        "gulp": "^3.9.1",
+        "gulp-coffee": "^2.3.2",
+        "gulp-plumber": "^1.1.0",
+        "lodash": "^4.15.0"
+    },
+    "dependencies": {
+        "bluebird": "^3.4.6",
+        "bunyan": "^1.8.1",
+        "chance": "^1.0.4",
+        "co": "^4.6.0",
+        "install": "^0.8.2",
+        "jsonfile": "^2.4.0",
+        "koa": "^1.2.4",
+        "koa-body": "^1.5.0",
+        "koa-compose": "^2.5.1",
+        "koa-jade": "^2.1.0",
+        "koa-router": "^5.4.0",
+        "lodash": "^4.15.0",
+        "mkdirp": "^0.5.1",
+        "moment": "^2.15.0",
+        "mongodb": "^2.2.10",
+        "mysql": "^2.11.1",
+        "nodemailer": "^2.6.4",
+        "npm": "^3.10.9",
+        "object-sizeof": "^1.1.1",
+        "request": "^2.78.0",
+        "server-destroy": "^1.0.1",
+        "xml2js": "^0.4.17",
+        "simple-captcha": "^0.1.10"
+    }
+}
