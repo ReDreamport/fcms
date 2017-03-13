@@ -1,0 +1,4 @@
+include ../FieldItemMixin
+
++FieldItem(field, fClass)
+    input.fw-field-item-input(class=fClass, type="time", value = F.formatDate(value, 'HH:mm'), disabled=field.readonly)

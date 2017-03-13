@@ -1,0 +1,26 @@
+# 编辑并保存
+F.toViewEntity = (entityName, _id)->
+    pageId = "view-entity-#{entityName}-#{_id}"
+    entityMeta = F.meta.entities[entityName]
+    title = "#{entityMeta.label} - #{F.digestId(_id)}"
+
+    F.openOrAddPage pageId, title, 'F.toViewEntity', [entityName, _id], ($page)->
+        $view = $(FT.ViewEntity({entityName, _id})).appendTo($page.find('.page-content'))
+
+        entityValue = null
+        q = F.api.get "entity/#{entityName}/#{_id}"
+        q.catch F.alertAjaxError
+        q.then (value)->
+            entityValue = value
+            $view.append FT.ViewEntityFields({entityValue, fields: entityMeta.fields})
+            F.loadDigestedEntities($view)
+
+        $view.find('.remove-entity').click ->
+            _id = $(this).attr("_id")
+            q = F.api.remove "entity/#{entityName}?_ids=#{_id}"
+            q.catch F.alertAjaxError
+            q.then ->
+                F.toastSuccess('删除成功')
+                F.removePage(pageId)
+
+        $view.find('.to-update-entity').click -> F.removePage(pageId)

@@ -1,0 +1,13 @@
+include FieldMixin
+table.simple
+    thead
+        tr
+            th
+            th
+            -var refEntityFields = F.meta.entities[field.refEntity].fields
+            each name in listFieldNames
+                th=refEntityFields[name].label
+
+    tbody
+        each itemValue in fieldValue
+            +popupComponentItem(itemValue, field, fClass, listFieldNames)

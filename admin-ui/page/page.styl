@@ -1,0 +1,27 @@
+@import "../common.styl"
+
+.page
+    padding 4px 0
+    background cBodyBg
+
+    .page-head
+        box-sizing border-box
+        height pageHeadHeight
+        border-bottom 1px solid cSeparator
+        background cPageHead
+        position relative
+        overflow hidden
+
+        .page-title
+            text-align center
+            line-height pageHeadHeight
+
+        .close-page
+            width mainBarHeight
+            height mainBarHeight
+            line-height mainBarHeight
+            absolute(0, 0, auto, auto)
+
+    .page-content
+        padding 8px 8px 16px 8px
+        background #fff

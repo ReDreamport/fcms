@@ -1,0 +1,106 @@
+.fw-tabbed
+    $c1 = #5fa2dd
+    $c2 = #fff
+    $c3 = #89c0f1
+
+    $tab-margin-top = 4px
+    $tab-margin-bottom = 0
+    $tab-padding-top = 4px
+    $tab-padding-bottom = 0
+    $tab-title-height = 32px
+
+    $scroll-btn-outer-width = 24px
+
+    .fw-header
+        position relative
+        background $c1
+        height ($tab-margin-top + $tab-margin-bottom + $tab-padding-top + $tab-padding-bottom + $tab-title-height)
+        vertical-align middle
+
+    .fw-bar
+        position absolute
+        background $c1
+        top 0
+        left 0
+        right 0
+        height 100%
+
+        .scroll-left, .scroll-right
+            display none
+
+        .fw-bar-scroll
+            position absolute
+            display inline-block
+            top 0
+            left 0
+            right 0
+            height 100%
+            overflow hidden
+
+        .fw-tab-container
+            position absolute
+            top 0
+            left 0
+            height 100%
+
+        &.bar-scrollable
+
+            .scroll-left, .scroll-right
+                position absolute
+                display block
+                width $scroll-btn-outer-width
+                margin $tab-margin-top 0 $tab-margin-bottom 0
+                padding $tab-padding-top 0 $tab-padding-bottom 0
+                line-height $tab-title-height
+                color $c2
+                text-align center
+
+                &:hover
+                    cursor pointer
+                    background $c3
+
+            .scroll-left
+                left 0
+                top 0
+
+            .scroll-right
+                right 0
+                top 0
+
+            .fw-bar-scroll
+                left $scroll-btn-outer-width
+                right $scroll-btn-outer-width
+
+    .fw-tab
+        position relative
+        display inline-block
+        margin $tab-margin-top 2px $tab-margin-bottom 2px
+        padding $tab-padding-top 16px $tab-padding-bottom 16px
+        line-height $tab-title-height
+        height $tab-title-height
+        color $c2
+        text-decoration none
+        width 100px
+        max-width 120px
+        overflow hidden
+        word-break break-all
+        white-space: nowrap
+        text-overflow ellipsis
+        vertical-align middle
+
+        .close-tab
+            position absolute
+            display block
+            top: 1px
+            right 2px
+            font-size 14px
+
+        &:hover
+            background $c3
+
+        &.active
+            color $c1
+            background $c2
+
+    .fw-pages
+        padding 16px

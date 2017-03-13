@@ -1,0 +1,39 @@
+if input == 'Reference'
+    a.edit-refs.fw-icon-button.iconfont.icon-select(href="javascript:")
+if multiple && input != 'Reference'
+    a.add-input-item.fw-icon-button.iconfont-icon-add(href="javascript:")
+.filter-input-item(class={hidden: multiple}, input=input)
+    if multiple
+        a.remove-input-item.iconfont.icon-delete.fw-icon-button(href="javascript:")
+    case input
+        when 'String'
+            input.input(type="text", placeholder="条件")
+        when 'Boolean'
+            -var name=F.uniqueId()
+            label
+                input.input(type="radio", name=name, value="", checked)
+                | &nbsp;都行&nbsp;&nbsp;
+            label
+                input.input(type="radio", name=name, value="true")
+                | &nbsp;是&nbsp;&nbsp;
+            label
+                input.input(type="radio", name=name, value="false")
+                | &nbsp;否
+        when 'Date'
+            input.input(type="date")
+        when 'Time'
+            input.input(type="time")
+        when 'DateTime'
+            input.input-date(type="date")
+            input.input-time(type="time")
+        when 'Int'
+            input.input(type="number")
+        when 'Float'
+            input.input(type="number")
+        when 'Select'
+            select.input
+                if options
+                    each o in options
+                        option(value=o.name)=o.label
+        when 'Reference'
+            a.ref-holder.to-view-entity(href='javascript:', entityName=refEntity, _id="")

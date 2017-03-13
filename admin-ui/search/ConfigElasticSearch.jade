@@ -1,0 +1,17 @@
+.view.view-config-es
+    .history
+    .work
+        div
+            select.method
+                option(value="GET") GET
+                option(value="POST") POST
+                option(value="PUT") PUT
+                option(value="DELETE") DELETE
+
+            input.path(type="text", placeholder="path")
+            button.send 发送
+        div
+            textarea.body(placeholder="body", rows=6)
+
+        pre.response
+

@@ -1,0 +1,4 @@
+include ../FieldItemMixin
+
++FieldItem(field, fClass)
+    input.fw-field-item-input(class=fClass, type="date", value=F.formatDate(value, 'YYYY-MM-DD'), disabled=field.readonly)

@@ -1,0 +1,30 @@
+.fw-field(name=field.name, class=fieldClass)
+    .fw-field-title
+        .field-label=field.label
+        .field-actions
+            if field.type == 'File' || field.type == 'Image'
+                if !field.readonly
+                    a.select-file.fw-icon-button.iconfont.icon-file(href="javascript:")
+                        // IE 的文件控件安全限制
+                        input.file.file-field(name='file' + F.uniqueId(), type="file", multiple=true)
+                if field.multiple
+                    a.fw-remove-all-file.fw-icon-button.iconfont.icon-clear(href="javascript:")
+                    a.fw-hide-all-file.fw-icon-button.iconfont.icon-hide(href="javascript:")
+            else if field.inputType == 'PopupComponent'
+                if field.multiple && !field.readonly
+                    a.fw-add-item-component.fw-icon-button.iconfont.icon-add(href="javascript:")
+                    a.fw-remove-all-item-component.fw-icon-button.iconfont.icon-clear(href="javascript:")
+                    a.fw-hide-all-item-component.fw-icon-button.fa.iconfont.icon-hide(href="javascript:")
+            else if field.type == 'Reference'
+                if !field.readonly
+                    a.fw-add-ref.fw-icon-button.iconfont.icon-select(href="javascript:")
+                    a.fw-remove-all-ref.fw-icon-button.iconfont.icon-clear(href="javascript:")
+                if field.multiple
+                    a.fw-hide-all-ref.fw-icon-button.iconfont.icon-hide(href="javascript:")
+            else if field.inputType != 'CheckList'
+                if field.multiple && !field.readonly
+                    a.fw-field-add-item.fw-icon-button.iconfont.icon-add(href="javascript:")
+                    a.fw-field-remove-all-items.fw-icon-button.iconfont.icon-clear(href="javascript:")
+                    a.fw-field-hide-items.fw-icon-button.iconfont.icon-hide(href="javascript:")
+    .fw-field-input
+    .fw-field-tip=field.useGuide

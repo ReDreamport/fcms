@@ -1,0 +1,7 @@
+.view.list-entity
+    .actions
+        if F.hasEntityPermission('CreateEntity', entityName)
+            a.to-add-entity.btn(href="javascript:",entityName=entityName) 新增
+            .btn-separator
+        if F.hasEntityPermission('DeleteManyEntity', entityName)
+            a.remove-entities.btn(href="javascript:",entityName=entityName) 删除

@@ -1,0 +1,59 @@
+@import "../variable.styl"
+
+fw-desk-bar-height = 32px
+
+.fw-desk
+    position relative
+    width 100%
+    height 100%
+    z-index deskZ
+
+    .fw-desk-task
+        position absolute
+        z-index 2
+        width 100%
+        height fw-desk-bar-height
+        line-height fw-desk-bar-height
+        top 0
+        left 0
+        background #194a76 - 10%
+
+        .fw-bar-button
+            display inline-block
+            height (fw-desk-bar-height - 4px)
+            line-height (fw-desk-bar-height - 4px)
+            margin-top 4px
+            padding 0 8px
+            text-align center
+            overflow hidden
+            word-break break-all
+            font-size 12px
+            color #eee
+            border-radius 0 (fw-desk-bar-height - 4px) 0 0
+            background #194a76 + 10%
+
+            &.front
+                background #fff
+                color #194a76 + 10%
+
+        .fw-desk-task-left
+            position absolute
+            left 0
+
+        .fw-desk-task-center
+            position absolute
+            overflow hidden
+            height 100%
+
+        .fw-desk-task-right
+            position absolute
+            right 0
+
+    .fw-desk-content
+        position absolute
+        z-index 1
+        width 100%
+        bottom 0
+        left 0
+        top fw-desk-bar-height
+        padding-top fw-desk-bar-height

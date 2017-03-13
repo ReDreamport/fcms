@@ -1,0 +1,71 @@
+@import "../variable.styl"
+
+windowTitleBarHeight = 40px
+cOverlayModalBg = rgba(200, 200, 200, 0.5)
+windowActionBtnSize = 32px
+cWindowBorder = cSeparator
+windowBorder = 2px solid cWindowBorder
+
+.fw-overlay
+    position: absolute
+    top: 0
+    left: 0
+
+.fw-modal-overlay
+    absolute(0, 0, 0, 0)
+    background rgb(cOverlayModalBg)
+    background: cOverlayModalBg
+
+    &.fw-modal-fixed
+        fixed(0, 0, 0, 0)
+
+.fw-window
+    box-shadow 0 2px 8px 1px #888
+    background #fff
+
+    &.with-border
+    // border windowBorder
+        border-top 0
+
+    .fw-window-title-bar
+        absolute(0, 0, auto, 0)
+        height windowTitleBarHeight
+        line-height windowTitleBarHeight
+        z-index 2
+        box-sizing border-box
+        overflow hidden
+        border-bottom 1px solid cSeparator
+// border-top windowBorder
+
+    .fw-window-title
+        line-height windowTitleBarHeight
+        padding-left 8px
+        vertical-align middle
+        text-align center
+
+    .fw-window-actions
+        absolute(0, 0, 0, auto)
+        height windowTitleBarHeight
+
+    .fw-window-close, .fw-window-maximize
+        size = 32px
+        display inline-block
+        width size
+        height size
+        line-height size
+        margin ((windowTitleBarHeight - size) / 2) 0
+        text-align center
+        text-decoration none
+        vertical-align top
+        font-size 16px
+
+        &:hover
+            cursor cursor
+            text-decoration none
+            background #efefef
+
+    .fw-window-content
+        absolute(windowTitleBarHeight, 0, 0, 0)
+        overflow auto
+        z-index 1
+

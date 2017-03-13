@@ -1,0 +1,10 @@
+.entity-list
+    h2 实体列表
+    table.simple
+        each em, name in F.meta.entities
+            tr
+                td.label
+                    a.entity(href="javascript:", name=name)=em.label
+                td.name=name
+                td
+                    a.remove-entity(href="javascript:", name=name) 删除

@@ -1,0 +1,40 @@
+.view.view-promotion-channel
+    .hide-print
+        .actions
+            input.promotion-name(type="text", placeholder="promotion")
+            button.do-query Query
+            span.status
+        .actions
+            button.add-channel Add Channel
+            button.fill-url Fill URL
+            button.refresh-url Refresh URL
+            button.import-channel Import Following Channels
+            button.print-view Print
+
+        .actions
+            textarea.channel-names(rows=3, placeholder="渠道名粘贴处，| 分隔")
+
+        .actions
+            button.save Save
+
+        p
+            input.base-url(type="text", placeholder="Base URL")
+
+        .actions
+            label
+                input.show-qr-code(type="checkbox")
+                span 显示二维码
+            | &nbsp;&nbsp;&nbsp;
+            label
+                input.show-stats(type="checkbox")
+                span 显示统计
+
+    table.simple
+        thead
+            tr
+                th
+                th 渠道
+                th 链接
+                th.qr-code.hidden QR Code
+                th.status.hidden Stats
+        tbody.channels

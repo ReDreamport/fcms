@@ -1,0 +1,47 @@
+@import "../common.styl"
+
+.main-menu
+    box-sizing border-box
+    fixed(0, auto, 0, 0)
+    width mainMenuWidth
+    border-right 1px solid cSeparator
+    background cMainMenu
+    height 100%
+    overflow auto
+    z-index 10
+
+    &.collapsed
+        display none
+
+    .open
+        border-bottom 4px solid cSeparator
+
+    .open-item
+        text-align right
+
+    .menu-title
+        text-align center
+        line-height 32px
+        background cSelection
+
+    .menu-group
+        border-bottom 1px solid cSeparator
+
+    .menu-group-title
+        display none
+
+    .menu-items
+        padding-bottom 32px
+
+    .menu-item
+        display block
+        padding 8px 12px
+        text-decoration none
+        font-size 12px
+
+        @media all and (max-width: notPCWidth)
+            font-size 14px
+            padding 12px 12px
+
+        &:hover
+            background cSelection

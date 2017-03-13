@@ -1,0 +1,4 @@
+.ref-item.fw-field-item(class=fClass)
+    -var hasDf = F.hasDigestFields(entityMeta)
+    a.fw-remove-ref.iconfont.icon-delete.fw-icon-button(href="javascript:")
+    a.to-view-entity(href="javascript:", _id=id, entityName=entityMeta.name, class={'loading-ref': hasDf})=F.digestId(id)

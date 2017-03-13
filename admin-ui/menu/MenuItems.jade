@@ -1,0 +1,14 @@
+each mg in menuGroups
+    .menu-group
+        .menu-group-title=mg.label
+        each mi in mg.menuItems
+            if mi.toEntity
+                -var em = F.meta.entities[mi.toEntity]
+                if em
+                    a.menu-item.to-list-entity(href="javascript:", entityName=mi.toEntity)= mi.label
+            else if mi.callFunc
+                a.menu-item.call-func(href="javascript:", func=mi.callFunc)= mi.label
+if F.user.admin
+    .menu-group
+        .menu-group-title Menu
+        a.menu-item.to-list-entity(href="javascript", entityName="F_Menu") 编辑菜单

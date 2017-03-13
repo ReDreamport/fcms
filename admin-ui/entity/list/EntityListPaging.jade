@@ -1,0 +1,47 @@
+.entity-list-actions
+    .tools
+        input.fast-search(type="text", placeholder="快速搜索")
+        a.refresh-page.btn.btn-border(href="javascript:", class="refresh-" + entityName) 查询
+        a.prev-page.btn.btn-border.iconfont(href="javascript:") 上一页
+        a.next-page.btn.btn-border.iconfont(href="javascript:") 下一页
+        span 第
+        input.page-no.text-center(type="text", value="1")
+        span 页/共
+        span.page-num
+        span 页,&nbsp;&nbsp;每页
+        input.page-size.text-center(type="text", value="20")
+        span 项,&nbsp;共
+        span.total
+        span 项
+        a.columns.btn.btn-border.iconfont.icon-viewcolumns(href="javascript:")
+        a.more-search.btn.btn-border.iconfont.icon-filter(href="javascript:")
+        span &nbsp;&nbsp;按&nbsp;
+        select.sort-field
+            each fieldMeta, fieldName in entityMeta.fields
+                if F.isSortableField(fieldMeta)
+                    option(value=fieldName, selected=(fieldName == '_modifiedOn'))=fieldMeta.label
+        span &nbsp;排序&nbsp;
+        select.sort-order
+            option(value="asc") 升序
+            option(value="desc", selected=true) 降序
+
+    .filters.hidden
+        .filters-action
+            a.add-filter.plain-btn(href="javascript:")
+                i.iconfont.icon-add
+                span &nbsp;添加条件
+            a.clear-filters.plain-btn(href="javascript:")
+                i.iconfont.icon-clear
+                span &nbsp;清空条件
+            .btn-separator
+            input.filters-name(type="text", placeholder="查询名称")
+            a.save-filters.plain-btn(href="javascript:")
+                i.iconfont.icon-save
+                span &nbsp;保存查询
+            a.remove-filters.plain-btn(href="javascript:")
+                i.iconfont.icon-delete2
+                span &nbsp;取消保存查询
+            .btn-separator
+    .columns-display.hidden
+        .column-names
+        a.confirm-columns-display.btn(href="javascript:") 确定

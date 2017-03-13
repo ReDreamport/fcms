@@ -1,0 +1,18 @@
+include EntityMixin
+
+.entity-digest
+    each d, index in digest
+        if d
+            -var fm = entityMeta.fields[d.field]
+            if fm.type == 'Image'
+                -var link = F.fileObjectToLink(d.value)
+                if link
+                    img(src=link)
+            else if field == '_id'
+                span=F.digestId(value) + (index < digest.length - 1 && ', ' || '')
+            else
+                -var ev = {}; ev[d.field] = d.value
+                +renderFieldValue(fm, ev)
+                | #{index < digest.length - 1 && ', ' || ''}
+        else
+            | #{index < digest.length - 1 && ', ' || ''}

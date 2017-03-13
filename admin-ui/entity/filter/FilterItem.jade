@@ -1,0 +1,8 @@
+.filter-item
+    a.remove-item.iconfont.icon-delete.fw-icon-button(href="javascript:")
+    select.field-name
+        each fieldMeta, fieldName in fields
+            if fieldMeta.type != 'Component'
+                option(value=fieldName)=fieldMeta.label
+    select.operator
+    .filter-input

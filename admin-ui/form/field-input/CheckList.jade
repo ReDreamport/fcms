@@ -1,0 +1,9 @@
+.check-list
+    if field.multiple && !field.readonly
+        .check-list-actions
+            label
+                input.toggle-check-all(type="checkbox")
+                | &nbsp;全部选择/不选择
+    a.fw-field-hide-options.fw-icon-button.iconfont.icon-hide(href="javascript:")
+    br
+    .list

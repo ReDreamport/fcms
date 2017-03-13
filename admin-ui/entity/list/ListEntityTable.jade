@@ -1,0 +1,10 @@
+.table-scroll
+    table.entity-list.simple
+        thead
+            tr
+                th
+                    input.toggle-check-all(type="checkbox")
+                th
+                th ID
+                each fn in fieldNames
+                    th(class="col-" + fn)=entityMeta.fields[fn].label

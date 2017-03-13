@@ -1,0 +1,69 @@
+mixin listFields(fieldNames, entityValue, entityMeta)
+    td(style={width: '100px', 'text-align': 'center'})
+        a.to-view-entity(href="javascript:", entityName=entityMeta.name, _id=entityValue._id)=F.digestId(entityValue._id)
+    each fn in fieldNames
+        -var fm = entityMeta.fields[fn]
+        td(class="col-" + fn, style=F.tdStyleOfField(fm))
+            +renderFieldValue(fm, entityValue, false)
+
+mixin viewEntityTable(fields, entityValue, systemFields)
+    -var fields = systemFields && fields || F.removeSystemFields(fields)
+    table.view-entity-table.simple(style="display: inline-table;")
+        each fieldMeta in fields
+            tr
+                td=fieldMeta.label
+                td
+                    +renderFieldValue(fieldMeta, entityValue, true)
+
+mixin renderFieldValue(fieldMeta, entityValue, renderComponentCompletely)
+    -var fn = fieldMeta.name
+    -var entityValue = entityValue || {}
+    if fieldMeta.options && fieldMeta.options.length
+        -var options = F.optionsArrayToMap(fieldMeta.options)
+        if entityValue[fn]
+            -var fv = F.ensureValueIsArray(entityValue[fn])
+            each iv in fv
+                | #{options[iv] || iv}
+    else
+        case fieldMeta.type
+            when 'Object'
+                | #{F.digestId(entityValue[fn])}
+            when 'Date'
+                | #{F.formatDate(entityValue[fn], "YY-MM-DD")}
+            when 'Time'
+                | #{F.formatDate(entityValue[fn], "HH:mm")}
+            when 'DateTime'
+                | #{F.formatDate(entityValue[fn], "YY-MM-DD HH:mm:ss.SSS")}
+            when 'Boolean'
+                if entityValue[fn] === true
+                    i.iconfont.icon-correct
+                else if entityValue[fn] === false
+                    i.iconfont.icon-wrong
+            when 'File'
+                if entityValue[fn]
+                    -var fv = F.ensureValueIsArray(entityValue[fn])
+                    each iv in fv
+                        if iv
+                            a(href=F.fileObjectToLink(iv), target="_blank") 下载[#{F.showFileSize(iv.size)}]
+            when 'Image'
+                if entityValue[fn]
+                    -var fv = F.ensureValueIsArray(entityValue[fn])
+                    each iv in fv
+                        if iv
+                            img.resource(src=F.fileObjectToLink(iv))
+            when 'Component'
+                if entityValue[fn]
+                    -var fv = F.ensureValueIsArray(entityValue[fn])
+                    -var refEntityMeta = F.meta.entities[fieldMeta.refEntity]
+                    each iv in fv
+                        if renderComponentCompletely
+                            +viewEntityTable(refEntityMeta.fields, iv, false)
+                        else
+                            | !{F.digestEntity(refEntityMeta, iv)}
+            when 'Reference'
+                if entityValue[fn]
+                    -var fv = F.ensureValueIsArray(entityValue[fn])
+                    each id in fv
+                        a.to-view-entity.loading-ref(href="javascript:", _id=id, entityName=fieldMeta.refEntity)=F.digestId(id)
+            default
+                | #{entityValue[fn]}

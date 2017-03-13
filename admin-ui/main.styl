@@ -1,0 +1,202 @@
+@import "./common.styl"
+
+* {
+    vertical-align middle
+}
+
+html, body
+    height 100%
+    color cText
+
+.hidden
+    display none
+
+a
+    color cText
+
+    &:hover
+        text-decoration underline
+
+a.plain-btn
+    display inline-block
+    box-sizing border-box
+    text-align center
+    text-decoration none
+    vertical-align middle
+
+    &:hover
+        text-decoration none
+        background cSelection
+
+a.link-btn
+    display inline-block
+    box-sizing border-box
+    text-align center
+    vertical-align middle
+    color cBtnBg
+    margin 0 2px
+
+    &:hover
+        background cSelection
+
+.btn
+    display inline-block
+    box-sizing border-box
+    text-align center
+    text-decoration none
+    line-height btnHeight
+    height btnHeight
+    background cBtnBg
+    color #fff
+    padding 0 16px
+    vertical-align middle
+    border-radius 2px
+
+    @media all and (min-width: notPCWidth)
+        line-height btnHeightSmall
+        height btnHeightSmall
+
+    &:hover
+        background cBtnBg + 30%
+        text-decoration none
+
+.btn.btn-border
+    background transparent
+    border 1px solid cBtnBg
+    color cBtnBg
+    border-radius 2px
+
+.btn-separator
+    display inline-block
+    margin 0 8px
+    height 4px
+    vertical-align middle
+    border 4px solid #ddd
+
+input[type="text"]
+input[type="password"]
+input[type="number"]
+input[type="date"]
+input[type="time"]
+select
+    box-sizing border-box
+    line-height inputHeight
+    height inputHeight
+    font-size 14px
+    border 1px solid cInputBorder
+    vertical-align middle
+    border-radius 4px
+    width inputTextWidth
+
+    @media all and (min-width: notPCWidth)
+        line-height inputHeightSmall
+        height inputHeightSmall
+
+textarea
+    border 1px solid cInputBorder
+    border-radius 4px
+
+input[type="checkbox"]
+input[type="radio"]
+    height inputHeight
+    line-height inputHeight
+    vertical-align middle
+
+    @media all and (min-width: notPCWidth)
+        line-height inputHeightSmall
+        height inputHeightSmall
+
+input[type="text"]
+input[type="password"]
+input[type="number"]
+    padding 0 4px
+
+table.simple
+    border = 1px solid cTableBorder
+    border border
+
+    td, th
+        border border
+        padding 4px 8px
+
+    th
+        padding 8px 8px
+
+img.resource
+    max-width 80px
+    max-height 80px
+
+.text-center
+    text-align center
+
+.fw-icon-button
+    display inline-block
+    width iconButtonHeight
+    height iconButtonHeight
+    line-height iconButtonHeight
+    text-align center
+    text-decoration none
+    font-size 18px
+
+    @media all and (min-width: notPCWidth)
+        width iconButtonHeightSmall
+        height iconButtonHeightSmall
+        line-height iconButtonHeightSmall
+
+    &:hover
+        text-decoration none
+        background #f1f1f1
+
+.main-body
+    position relative
+    margin-left mainMenuWidth
+
+    @media all and (max-width: notPCWidth)
+        margin-left mainMenuWidth
+        margin-right (-1 * mainMenuWidth)
+
+        &.full
+            margin-left 0
+            margin-right 0
+
+    &.full
+        margin-left 0
+
+.main-bar
+    box-sizing border-box
+    height mainBarHeight
+    line-height mainBarHeight
+    border-bottom 1px solid cSeparator
+    background cMainBar
+    overflow hidden
+
+    .toggle-main-menu, .exit
+        display block
+        width mainBarHeight
+        line-height mainBarHeight
+        height mainBarHeight
+
+    .toggle-main-menu
+        absolute(0, auto, 0, 0)
+
+    .exit
+        absolute(0, 0, 0, auto)
+
+    .main-title
+        text-align center
+
+.print-overlay
+    position absolute
+    top 0
+    right 0
+    left 0
+    z-index 1000
+    background #fff
+    overflow auto
+
+    .content
+        overflow visible
+
+@media print
+    .hide-print
+        display none

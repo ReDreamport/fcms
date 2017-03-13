@@ -1,0 +1,13 @@
+.form(entityName=entityName, fid=fid, edit=(isCreate && 'create' || 'update'))
+    .form-actions
+        a.toggle-form-visible.iconfont.icon-tablecollapse.fw-icon-button(href="javascript:")
+        .actions-right
+            a.show-editor-input.iconfont.icon-form.fw-icon-button(href="javascript:")
+            a.show-editor-json.iconfont.icon-json.fw-icon-button(href="javascript:")
+    .form-editor
+        .form-input
+        .form-json.hidden
+            a.json-to-input.btn(href="javascript:") 填入编辑器
+            textarea(rows=20)
+
+

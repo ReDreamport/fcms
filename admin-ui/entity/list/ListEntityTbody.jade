@@ -1,0 +1,12 @@
+include ../EntityMixin
+
+-var canEditEntity = F.user.admin || F.hasEntityPermission('UpdateOneEntity', entityMeta.name)
+tbody
+    each i in page
+        tr(_id = i._id)
+            td(style="width: 40px; text-align: center; padding: 0px;")
+                input.select(type="checkbox")
+            td(style="width: 40px; text-align: center; padding: 0px;")
+                if canEditEntity
+                    a.to-update-entity.iconfont.icon-edit.fw-icon-button(href="javascript:", entityName=entityMeta.name, _id=i._id)
+            +listFields(fieldNames, i, entityMeta)

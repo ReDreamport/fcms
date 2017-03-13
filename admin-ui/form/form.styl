@@ -1,0 +1,171 @@
+@import "../common.styl"
+
+.fw-field
+    margin 0
+    box-sizing border-box
+    border-top 1px solid #e0eafa
+    padding 8px
+    font-size 14px
+    width (inputTextWidth + 10px)
+    display inline-block
+    vertical-align top
+
+    .fw-field-title
+        font-size 14px
+        margin-bottom 4px
+        font-weight 700
+        vertical-align middle
+
+        .field-label
+            display inline-block
+            margin-right 8px
+
+        .field-actions
+            position relative
+            display inline-block
+
+        .select-file
+            position relative
+
+        .file-field
+            absolute(0, auto, auto, 0)
+            z-index 1
+            width iconButtonHeightSmall
+            height iconButtonHeightSmall
+            opacity: 0
+            filter: unquote("alpha(opacity = 0)")
+
+        .fw-remove-all-file, .fw-hide-all-file
+            position relative // 做这么复杂，为了解决 IE 文件控件的安全限制，包括上面的相对定位等
+            z-index 20
+
+    .fw-field-tip
+        display block
+        color #888
+        font-size 12px
+        margin-bottom 2px
+
+    .fw-field-status
+        display block
+        color #f66
+        font-size 14px
+        margin-left 8px
+        margin-top 4px
+
+// 小心这边写的很乱！
+    .fw-field-item
+        display block
+        vertical-align top
+
+    tr.fw-field-item
+        display table-row
+
+    &.finput-TextArea
+        width 100%
+        .fw-field-input
+            width 100%
+        textarea
+            width 100%
+            height 75px
+
+    &.finput-RichText
+        width 100%
+        color #000
+
+        a:hover
+            text-decoration none
+
+    &.of-multiple
+        width 100%
+
+        .fw-field-item
+            display inline-block
+            padding 4px 0 4px 0
+
+            &:hover
+                background #f2f2f2
+                cursor move
+
+        tr.fw-field-item
+            display table-row
+
+    .check-list-item
+        display inline-block
+        padding 4px 12px 4px 0
+        word-break break-all
+
+        input
+            margin-right 4px
+
+    .fw-field-input, .fw-field-item-input
+        display inline-block
+
+//.fw-field-input
+//    max-height 150px
+//    overflow auto
+
+    &.ftype-Component.of-multiple
+        .fw-field-item
+            display block
+
+        tr.fw-field-item
+            display table-row
+
+    .fw-field-remove-item, .fw-remove-file, .fw-remove-ref
+        display inline-block
+        vertical-align top
+        text-align center
+
+.form
+    border-bottom 1px solid #e0eafa
+    min-width 320px
+
+    .form-actions
+        position relative
+        background #e0eafa
+        padding 0 8px
+        margin-bottom 4px
+
+    .toggle-form-visible
+        display inline-block
+
+    .actions-right
+        float right
+
+    .show-editor-input, .show-editor-json
+        margin 0 4px
+
+    .form-json textarea
+        display block
+        box-sizing border-box
+        width 100%
+        margin 4px 0
+        font-family "gubblebum-blocky", monospace
+
+    .group-title
+        margin 4px 0
+        padding 4px 0
+        text-align center
+        border = 1px solid #aaa
+        border-top border
+        border-bottom border
+
+.ref-item
+    display inline-block
+    padding 0 4px 4px 0
+    vertical-align middle
+
+.check-list-actions
+    display inline-block
+    padding 2px 0
+    border-bottom 1px solid cSeparator
+    margin 8px 0
+
+.check-list-group
+    padding-left 8px
+    border 1px solid cSeparator
+
+    .check-list-group-name
+        display inline-block
+        color cBtnBg
+        line-height 2em

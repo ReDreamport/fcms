@@ -1,0 +1,9 @@
+tr(style="border-bottom: 1px solid #333; border-top: 1px solid #333;")
+    td
+        button.remove-row 删除
+    td
+        input.channel-name(type="text", value=name)
+    td
+        a.url(href=url || "javascript:", c=c)=url
+    td.qr-code.hidden
+    td.status.hidden PV: #{pv}, UV: #{uv}, IP: #{ip}
