@@ -1,7 +1,8 @@
 Meta = require '../Meta'
+log = require '../log'
 
-exports.gSyncSchema = (mysql, app)->
-    entities = app.meta.getAllMeta().entities
+exports.gSyncSchema = (mysql)->
+    entities = Meta.getAllMeta().entities
 
     for entityName, entityMeta of entities
         continue unless entityMeta.db == Meta.DB.mysql
@@ -9,12 +10,12 @@ exports.gSyncSchema = (mysql, app)->
         # 创建 Schema 貌似是自动提交的
         yield from mysql.gWithoutTransaction (conn)->
             unless yield from gTableExists(entityMeta.tableName, conn)
-                app.log.system.info 'create table for ' + entityName
+                log.system.info 'create table for ' + entityName
                 yield from gCreateTable(entityMeta, conn)
             else
                 for fieldName, fieldMeta of entityMeta.fields
                     unless yield from gColumnExists(entityMeta.tableName, fieldName, conn)
-                        app.log.system.info 'add column ' + fieldName + ' for ' + entityName
+                        log.system.info 'add column ' + fieldName + ' for ' + entityName
                         yield from gAddColumn(entityMeta, fieldMeta, conn)
 
 gCreateTable = (entityMeta, conn)->

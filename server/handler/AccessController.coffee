@@ -1,14 +1,9 @@
 log = require '../log'
 error = require '../error'
-applications = require '../applications'
+
+UserService = require '../security/UserService'
 
 exports.gIdentifyUser = (next)->
-    appName = @route.info.appName
-    log.debug 'app name', appName
-    app = applications.getAppByName appName
-    throw new error.UserError("NoSuchApp", "无法解析的应用") unless app?
-    @state.app = app
-
     trackId = @cookies.get(appName + 'TID', {signed: true})
     @state.trackId = trackId
 
@@ -17,7 +12,7 @@ exports.gIdentifyUser = (next)->
 
     if userId && userToken
         try
-            user = yield from app.userService.gAuthToken(userId, userToken)
+            user = yield from UserService.gAuthToken(userId, userToken)
             # log.debug 'auth token: ', user
             @state.user = user if user
         catch e
@@ -46,20 +41,20 @@ gCheckAll = (httpCtx)->
 
     if ri.action
         # 有固定权限的
-        yield from gCheckUserHasAction state.user, ri.action, state.app
+        yield from gCheckUserHasAction state.user, ri.action
     else if ri.auth is true
         # 只要登录即可，无权限
         state.user?
     else
         gAuthHandler = authHandlers[ri.auth]
         unless gAuthHandler
-            state.app.log.system.error 'No auth handler for ' + ri.auth
+            log.system.error 'No auth handler for ' + ri.auth
             return false
 
         yield from gAuthHandler httpCtx
 
 # 检查用户是否有固定权限
-gCheckUserHasAction = (user, action, app)->
+gCheckUserHasAction = (user, action)->
     return false unless user?
 
     return true if user.acl?.action?.has action
@@ -67,7 +62,7 @@ gCheckUserHasAction = (user, action, app)->
     roles = user.roles
     if roles
         for roleId in roles
-            role = yield from app.userService.gRoleById roleId
+            role = yield from UserService.gRoleById roleId
             return true if role?.acl?.action?.as action
 
     false
@@ -96,12 +91,12 @@ gCheckUserHasEntityAction = (user, action, entityName)->
         roles = user.roles
         if roles
             for roleId in roles
-                role = yield from app.userService.gRoleById roleId
+                role = yield from UserService.gRoleById roleId
                 if role
                     entityAcl = role.acl?.entity?[entityName]
                     return true if '*' in entityAcl || action in entityAcl
     else
-        role = yield from app.userService.gGetAnonymousRole()
+        role = yield from UserService.gGetAnonymousRole()
         if role
             entityAcl = role.acl?.entity?[entityName]
             return true if '*' in entityAcl || action in entityAcl

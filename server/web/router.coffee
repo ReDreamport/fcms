@@ -35,14 +35,14 @@ addRouteRules = (method, url, info, handlers...)->
 
 
 class RouteRuleRegisters
-    constructor: (@appName, @errorCatcher)->
-        throw new Error 'appName cannot be empty' unless @appName
+    constructor: (@urlPrefix, @errorCatcher)->
+        throw new Error 'urlPrefix cannot be empty' unless @urlPrefix
 
     add: (method, url, info, handlers...)->
-        url = path.normalize(@appName + "/" + url)
+        url = path.normalize(@urlPrefix + "/" + url)
         info = info || {}
         info.errorCatcher = @errorCatcher
-        info.appName = @appName
+        info.urlPrefix = @urlPrefix
         addRouteRules(method, url, info, handlers...)
 
     get: (url, info, handlers...)->

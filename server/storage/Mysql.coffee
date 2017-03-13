@@ -3,8 +3,11 @@ _ = require 'lodash'
 mysql = require 'mysql'
 PoolConnection = require 'mysql/lib/PoolConnection'
 
+log = require '../log'
+config = require '../config'
+
 class MysqlStore
-    constructor: (@config, @app)->
+    constructor: (@config)->
 
     _init: ->
         @pool = mysql.createPool
@@ -19,19 +22,19 @@ class MysqlStore
     gDispose: ->
         return unless @pool?
 
-        @app.log.system.info "Closing mysql [#{@config.host}]..."
+        log.system.info "Closing mysql [#{@config.host}]..."
 
         pEndPool = Promise.promisify @pool.end.bind(@pool)
         try
             yield pEndPool()
         catch
-            @app.log.system.error e, 'dispose mysql', @config.host +"/" + @config.database
+            log.system.error e, 'dispose mysql', @config.host +"/" + @config.database
 
     gConnect: ->
-        _init() unless @pool?
+        @_init() unless @pool?
 
         connection = yield @pConnection()
-        new MysqlConnection(connection, @app)
+        new MysqlConnection(connection)
 
     gWithTransaction: (gWork)->
         conn = yield from @gConnect()
@@ -45,7 +48,7 @@ class MysqlStore
             try
                 yield conn.pRollback()
             catch e2
-                @app.log.system.error e2, "autoCommit, rollback"
+                log.system.error e2, "autoCommit, rollback"
             throw e
         finally
             conn.release()
@@ -65,10 +68,8 @@ class MysqlStore
 
         yield from gWork ctx.conn
 
-exports.MysqlStore = MysqlStore
-
 class MysqlConnection
-    constructor: (@conn, @app)->
+    constructor: (@conn)->
         @pQuery = Promise.promisify @conn.query.bind(@conn)
         @pBeginTransaction = Promise.promisify @conn.beginTransaction.bind(@conn)
         @pCommit = Promise.promisify @conn.commit.bind(@conn)
@@ -146,7 +147,7 @@ class MysqlConnection
             placeholders.push "(#{placeholders2.join(',')})"
 
         sql = "insert into #{table}(#{columns.join(',')}) values #{placeholders.join(',')}"
-        @app.log.debug "sql,values", sql, sqlValues
+        log.debug "sql,values", sql, sqlValues
         yield @pWrite(sql, sqlValues)
 
     gUpdateByCriteria: (table, criteria, patch)->
@@ -158,7 +159,7 @@ class MysqlConnection
         where = criteriaToWhereClause(criteria, sqlValues)
 
         sql = "update #{table} set #{set} where #{where}"
-        @app.log.debug "sql,values", sql, sqlValues
+        log.debug "sql,values", sql, sqlValues
         yield @pWrite(sql, sqlValues)
 
     gDeleteManyByIds: (table, ids)->
@@ -168,6 +169,20 @@ class MysqlConnection
         inClause = buildInClause ids, sqlValues
         sql = "delete * from #{table} where _id IN #{inClause}"
         yield @pWrite(sql, sqlValues)
+
+exports.gInit = ->
+    mysqlConfig = config.mysql
+    if mysqlConfig
+        exports.mysql = new MysqlStore mysqlConfig
+
+        RefactorMysqlTable = require './RefactorMysqlTable'
+        yield from RefactorMysqlTable.gSyncSchema(exports.mysql)
+
+        MysqlIndex = require './MysqlIndex'
+        yield from MysqlIndex.gSyncWithMeta(exports.mysql)
+
+exports.gDispose = ->
+    yield from exports.mysql.gDispose() if exports.mysql
 
 exports.isIndexConflictError = (e)-> e.code == 'ER_DUP_ENTRY'
 

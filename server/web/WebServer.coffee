@@ -3,7 +3,7 @@ http = require 'http'
 
 log = require '../log'
 error = require '../error'
-applications = require '../applications'
+config = require '../config'
 
 server = null
 
@@ -39,16 +39,11 @@ gCatchError = (next)->
                 if @route.info?.isPage
                     @render '500'
 
-exports.gStart = (config)->
+exports.gStart = ->
     koa = require 'koa'
     koaServer = koa()
     koaServer.keys = [config.cookieKey]
     koaServer.proxy = true
-
-    # 注册路由
-    apps = applications.apps
-    for name, app of apps
-        app.addRouteRules()
 
     router = require './router'
     router.refresh()

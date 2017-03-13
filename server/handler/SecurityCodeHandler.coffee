@@ -1,9 +1,11 @@
 CaptchaHandler = require './CaptchaHandler'
 error = require '../error'
+config = require '../config'
+
+SecurityCodeService = require '../security/SecurityCodeService'
 
 # 发送验证码到手机
 exports.gSendSignUpCodeToPhone = ->
-    app = @state.app
     captchaId = @request.body?.captchaId || @cookies.get('captcha_id', {signed: true})
     captchaText = @request.body?.captchaText
 
@@ -18,13 +20,12 @@ exports.gSendSignUpCodeToPhone = ->
 
     phone = @params.phone
     return @status = 400 unless phone
-    yield from app.securityCodeService.gSendSecurityCodeToPhone(phone, app.config.signUpMessage)
+    yield from SecurityCodeService.gSendSecurityCodeToPhone(phone, config.signUpMessage)
 
     @status = 204
 
 # 发送验证码到邮箱
 exports.gSendSignUpCodeToEmail = ->
-    app = @state.app
     captchaId = @request.body?.captchaId || @cookies.get('captcha_id', {signed: true})
     captchaText = @request.body?.captchaText
 
@@ -40,8 +41,8 @@ exports.gSendSignUpCodeToEmail = ->
     email = @params.email
     return @status = 400 unless email
 
-    message = app.config.signUpMessage
-    yield from app.securityCodeService.gSendSecurityCodeToEmail(email, message, message)
+    message = config.signUpMessage
+    yield from SecurityCodeService.gSendSecurityCodeToEmail(email, message, message)
     @status = 204
 
 

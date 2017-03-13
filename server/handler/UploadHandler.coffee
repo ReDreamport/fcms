@@ -4,7 +4,7 @@ config = require '../config'
 fileUtil = require '../fileUtil'
 Meta = require '../Meta'
 
-gUpload = (files, query, app)->
+gUpload = (files, query)->
     return false unless files
 
     file = null
@@ -19,10 +19,10 @@ gUpload = (files, query, app)->
     return false unless entityName and fieldName
 
     if entityName and fieldName
-        fieldMeta = app.meta.getEntityMeta(entityName)?.fields?[fieldName]
+        fieldMeta = Meta.getEntityMeta(entityName)?.fields?[fieldName]
 
     subDir = fieldMeta?.fileStoreDir || "default"
-    fileTargetDir = path.join(config.fileDir, app.name, subDir)
+    fileTargetDir = path.join(config.fileDir, subDir)
 
     fileFinalFullPath = path.join(fileTargetDir, Meta.newObjectId().toString() + path.extname(file.path))
     yield from fileUtil.gMoveFileTo(file.path, fileFinalFullPath)
@@ -33,8 +33,7 @@ gUpload = (files, query, app)->
 
 # H5上传
 exports.gUpload = ->
-    app = @state.app
-    result = yield from gUpload @request.body.files, @query, app
+    result = yield from gUpload @request.body.files, @query
 
     if result
         @body = result
@@ -43,8 +42,7 @@ exports.gUpload = ->
 
 # Transport 上传
 exports.gUpload2 = ->
-    app = @state.app
-    result = yield from gUpload @request.body.files, @query, app
+    result = yield from gUpload @request.body.files, @query
     if result
         result.success = true
     else
@@ -53,14 +51,12 @@ exports.gUpload2 = ->
 
 # WangEditor 使用的图片上传接口
 exports.gUploadForRichText = ->
-    app = @state.app
-
     files = @request.body.files
     return @status = 400 unless files
     file = files.f0
     return @status = 400 unless file
 
-    result = yield from exports.gUploadUtil(file, app.name + '/RichText')
+    result = yield from exports.gUploadUtil(file, 'RichText')
     @type = 'text/html'
     @body = config.fileDownloadPrefix + result.fileRelativePath
 

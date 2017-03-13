@@ -1,10 +1,11 @@
 Meta = require '../Meta'
+log = require '../log'
 
 # 在执行数据库创建指定实体的元数据
-exports.gSyncWithMeta = (mongo, app)->
+exports.gSyncWithMeta = (mongo)->
     db = yield from mongo.gDatabase()
 
-    entities = app.meta.getAllMeta().entities
+    entities = Meta.getAllMeta().entities
 
     for entityName, entityMeta of entities
         continue unless entityMeta.db == Meta.DB.mongo
@@ -30,4 +31,4 @@ exports.gSyncWithMeta = (mongo, app)->
         # 小心不要删除主键！！
         # existedIndexes = yield c.listIndexes().toArray()
         catch e
-            app.log.system.error e, 'create mongo index', entityName
+            log.system.error e, 'create mongo index', entityName

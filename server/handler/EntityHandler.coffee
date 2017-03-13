@@ -3,12 +3,14 @@ _ = require 'lodash'
 util = require '../util'
 error = require '../error'
 Meta = require '../Meta'
-mysql = require '../storage/Mysql'
+
+EntityService = require '../service/EntityService'
+
+Mysql = require '../storage/Mysql'
 
 exports.gCreateEntity = ->
-    app = @state.app
     entityName = @params.entityName
-    entityMeta = app.meta.getEntityMeta(entityName)
+    entityMeta = Meta.getEntityMeta(entityName)
 
     throw new error.UserError('NoSuchEntity') unless entityMeta
     throw new error.UserError('CreateNotAllow') if entityMeta.noCreate
@@ -16,7 +18,7 @@ exports.gCreateEntity = ->
     instance = @request.body
     throw new error.UserError("EmptyOperation") unless instance
 
-    instance = app.meta.parseEntity(instance, entityMeta)
+    instance = Meta.parseEntity(instance, entityMeta)
 
     fieldCount = 0
     for key, value of instance
@@ -25,36 +27,34 @@ exports.gCreateEntity = ->
 
     instance._createdBy = @state.user._id
 
-    r = yield from app.entityService.gWithTransaction (conn)->
-        yield from app.entityService.gCreate(conn, entityMeta, instance)
+    r = yield from EntityService.gWithTransaction (conn)->
+        yield from EntityService.gCreate(conn, entityMeta, instance)
     @body = {id: r._id}
 
 exports.gUpdateEntityById = ->
-    app = @state.app
     entityName = @params.entityName
-    entityMeta = app.meta.getEntityMeta(entityName)
+    entityMeta = Meta.getEntityMeta(entityName)
 
     throw new error.UserError('NoSuchEntity') unless entityMeta
     throw new error.UserError('EditNotAllow') if entityMeta.noEdit
 
-    id = app.meta.parseId(@params.id, entityMeta)
+    id = Meta.parseId(@params.id, entityMeta)
     return @status = 404 unless id?
 
     instance = @request.body
     _version = instance._version
-    instance = app.meta.parseEntity(instance, entityMeta)
+    instance = Meta.parseEntity(instance, entityMeta)
     instance._modifiedBy = @state.user._id
 
     # log.debug 'update ', instance
 
-    yield from app.entityService.gWithTransaction (conn)->
-        yield from app.entityService.gUpdateByIdVersion(conn, entityMeta, id, _version, instance)
+    yield from EntityService.gWithTransaction (conn)->
+        yield from EntityService.gUpdateByIdVersion(conn, entityMeta, id, _version, instance)
     @status = 204
 
 exports.gUpdateEntityInBatch = ->
-    app = @state.app
     entityName = @params.entityName
-    entityMeta = app.meta.getEntityMeta(entityName)
+    entityMeta = Meta.getEntityMeta(entityName)
 
     throw new error.UserError('NoSuchEntity') unless entityMeta
     throw new error.UserError('EditNotAllow') if entityMeta.noEdit
@@ -64,19 +64,18 @@ exports.gUpdateEntityInBatch = ->
     throw new error.UserError('EmptyOperation') unless idVersions.length > 0
     delete patch.idVersions
 
-    patch = app.meta.parseEntity(patch, entityMeta)
+    patch = Meta.parseEntity(patch, entityMeta)
     patch._modifiedBy = @state.user._id
 
-    yield from app.entityService.gWithTransaction (conn)->
+    yield from EntityService.gWithTransaction (conn)->
         for p in idVersions
-            id = app.meta.parseId(p.id, entityMeta)
-            yield from app.entityService.gUpdateByIdVersion(conn, entityMeta, id, p._version, patch)
+            id = Meta.parseId(p.id, entityMeta)
+            yield from EntityService.gUpdateByIdVersion(conn, entityMeta, id, p._version, patch)
     @status = 204
 
 exports.gDeleteEntityInBatch = ->
-    app = @state.app
     entityName = @params.entityName
-    entityMeta = app.meta.getEntityMeta(entityName)
+    entityMeta = Meta.getEntityMeta(entityName)
 
     throw new error.UserError('NoSuchEntity') unless entityMeta
     throw new error.UserError('DeleteNotAllow') if entityMeta.noDelete
@@ -85,46 +84,44 @@ exports.gDeleteEntityInBatch = ->
     return @status = 400 unless ids
 
     ids = util.splitString(ids, ",")
-    ids = app.meta.parseIds(ids, entityMeta)
+    ids = Meta.parseIds(ids, entityMeta)
     throw new error.UserError('EmptyOperation') unless ids.length > 0
 
-    yield from app.entityService.gWithTransaction (conn)->
-        yield from app.entityService.gRemoveMany(conn, entityMeta, ids)
+    yield from EntityService.gWithTransaction (conn)->
+        yield from EntityService.gRemoveMany(conn, entityMeta, ids)
     @status = 204
 
 exports.gRecoverInBatch = ->
-    app = @state.app
     entityName = @params.entityName
-    entityMeta = app.meta.getEntityMeta(entityName)
+    entityMeta = Meta.getEntityMeta(entityName)
 
     throw new error.UserError('NoSuchEntity') unless entityMeta
 
     ids = @request.body?.ids
     throw new error.UserError('EmptyOperation') unless ids?.length > 0
 
-    ids = app.meta.parseIds(ids, entityMeta)
+    ids = Meta.parseIds(ids, entityMeta)
     throw new error.UserError('EmptyOperation') unless ids.length > 0
 
-    yield from app.entityService.gWithTransaction (conn)->
-        yield from app.entityService.gRecoverMany(conn, entityMeta, ids)
+    yield from EntityService.gWithTransaction (conn)->
+        yield from EntityService.gRecoverMany(conn, entityMeta, ids)
     @status = 204
 
 exports.gFindOneById = ->
-    app = @state.app
     entityName = @params.entityName
-    entityMeta = app.meta.getEntityMeta(entityName)
+    entityMeta = Meta.getEntityMeta(entityName)
 
     throw new error.UserError('NoSuchEntity') unless entityMeta
 
-    entityId = app.meta.parseId @params.id, entityMeta
+    entityId = Meta.parseId @params.id, entityMeta
     return @status = 404 unless entityId?
 
-    entity = yield from app.entityService.gWithoutTransaction (conn)->
-        yield from app.entityService.gFindOneById(conn, entityMeta, entityId, {repo: @query?._repo})
+    entity = yield from EntityService.gWithoutTransaction (conn)->
+        yield from EntityService.gFindOneById(conn, entityMeta, entityId, {repo: @query?._repo})
 
     # TODO 字段过滤
 
-    entity = app.meta.outputEntityToHTTP(entity, entityMeta)
+    entity = Meta.outputEntityToHTTP(entity, entityMeta)
 
     if entity
         @body = entity
@@ -132,22 +129,21 @@ exports.gFindOneById = ->
         @status = 404
 
 exports.gList = ->
-    app = @state.app
     entityName = @params.entityName
-    entityMeta = app.meta.getEntityMeta(entityName)
+    entityMeta = Meta.getEntityMeta(entityName)
     throw new error.UserError('NoSuchEntity') unless entityMeta
 
     query = exports.parseListQuery(entityMeta, @query, app)
     query.entityName = entityName
 
-    r = yield from app.entityService.gWithoutTransaction (conn)->
-        yield from app.entityService.gList conn, query
+    r = yield from EntityService.gWithoutTransaction (conn)->
+        yield from EntityService.gList conn, query
 
     # TODO 过滤 notInListAPI 的字段
     # TODO 权限字段过滤
     # TODO 密码等字段过滤
 
-    page = (app.meta.outputEntityToHTTP(i, entityMeta) for i in r.page)
+    page = (Meta.outputEntityToHTTP(i, entityMeta) for i in r.page)
     r.page = page
 
     r.pageNo = query.pageNo
@@ -202,7 +198,7 @@ exports.parseListQuery = (entityMeta, query, app)->
                 null
 
         if criteria
-            app.meta.parseListQueryValue(criteria, entityMeta)
+            Meta.parseListQueryValue(criteria, entityMeta)
 
     # 整理排序所用字段
     sort = if query._sort
@@ -218,7 +214,6 @@ exports.parseListQuery = (entityMeta, query, app)->
     {repo: query._repo, criteria, includedFields, sort, pageNo, pageSize}
 
 exports.gSaveFilters = ->
-    app = @state.app
     req = @request.body
     return @status = 400 unless req
 
@@ -227,26 +222,25 @@ exports.gSaveFilters = ->
         criteria: req.criteria, sortBy: req.sortBy, sortOrder: req.sortOrder
     }
 
-    entityMeta = app.meta.getEntityMeta('F_ListFilters')
+    entityMeta = Meta.getEntityMeta('F_ListFilters')
 
     criteria = {name: req.name, entityName: req.entityName}
     includedFields = ['_id', '_version']
-    filters = yield from app.entityService.gFindOneByCriteria(null, entityMeta, criteria, {includedFields})
+    filters = yield from EntityService.gFindOneByCriteria(null, entityMeta, criteria, {includedFields})
     if filters
-        yield from app.entityService.gUpdateByIdVersion(null, entityMeta, filters._id, filters._version, update)
+        yield from EntityService.gUpdateByIdVersion(null, entityMeta, filters._id, filters._version, update)
     else
-        yield from app.entityService.gCreate(null, filters, update)
+        yield from EntityService.gCreate(null, filters, update)
 
     @status = 204
 
 exports.gRemoveFilters = ->
-    app = @state.app
     query = @query
     return @status = 400 unless query and query.name and query.entityName
 
-    entityMeta = app.meta.getEntityMeta('F_ListFilters')
+    entityMeta = Meta.getEntityMeta('F_ListFilters')
 
-    yield from app.entityService.gRemoveManyByCriteria(null, entityMeta, {
+    yield from EntityService.gRemoveManyByCriteria(null, entityMeta, {
         name: query.name, entityName: query.entityName
     })
 

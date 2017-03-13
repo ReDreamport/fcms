@@ -1,7 +1,8 @@
 Meta = require '../Meta'
+log = require '../log'
 
-exports.gSyncWithMeta = (mysql, app)->
-    entities = app.meta.getAllMeta().entities
+exports.gSyncWithMeta = (mysql)->
+    entities = Meta.getAllMeta().entities
 
     for entityName, entityMeta of entities
         continue unless entityMeta.db == Meta.DB.mysql
@@ -32,4 +33,4 @@ exports.gSyncWithMeta = (mysql, app)->
         # TODO 删除不再需要的索引
         # 小心不要删除主键！！
         catch e
-            app.log.system.error e, entityName
+            log.system.error e, entityName

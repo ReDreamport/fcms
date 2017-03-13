@@ -20,6 +20,7 @@
     };
 
     Util.prototype.errorHandler = function (err) {
+        console.error(err.toString());
         beep(2);
     };
 

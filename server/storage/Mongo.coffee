@@ -2,39 +2,48 @@ mongodb = require 'mongodb'
 ObjectId = mongodb.ObjectId
 MongoClient = mongodb.MongoClient
 
+log = require '../log'
+config = require '../config'
+
 class MongoStore
-    constructor: (@name, @url, @app)->
+    constructor: (@name, @url)->
 
     gDatabase: ->
         return @db if @db
 
         db = yield MongoClient.connect @url
-        log = @app.log.system
 
         db.on 'close', =>
             @db = null
-            log.info "MongoDB [#{@name}] closed"
+            log.system.info "MongoDB [#{@name}] closed"
 
         db.on 'error', (e)->
             @db = null
-            log.error e, "MongoDB [#{@name}] error"
+            log.system.error e, "MongoDB [#{@name}] error"
 
         db.on 'reconnect', ->
-            log.info "Mongo DB [#{@name}] reconnect"
+            log.system.info "Mongo DB [#{@name}] reconnect"
 
         @db = db
         return db
 
     gDispose: ->
-        @app.log.system.info "Closing mongodb [#{@name}]..."
+        log.system.info "Closing mongodb [#{@name}]..."
 
         return unless @db
         try
             yield @db.close()
         catch e
-            @app.log.system.error e, "dispose mongodb [#{@name}]"
+            log.system.error e, "dispose mongodb [#{@name}]"
 
-exports.MongoStore = MongoStore
+exports.gInit = ->
+    throw new Error 'Mongo config is required now' unless config.mongo?.url
+    exports.mongo = new MongoStore 'main', config.mongo.url
+    MongoIndex = require './MongoIndex'
+    yield from MongoIndex.gSyncWithMeta(exports.mongo)
+
+exports.gDispose = ->
+    yield from exports.mongo.gDispose() if exports.mongo
 
 # 返回值是ObjectId
 exports.getInsertedIdObject = (r)->

@@ -1,22 +1,23 @@
 nodemailer = require 'nodemailer'
 Promise = require 'bluebird'
 
-class MailService
-    constructor: (@app)->
-        @pTransporterSendMail = null
-        @mailConfig = @app.config.mail
+config = require '../config'
 
-        transporter = nodemailer.createTransport
-            host: @mailConfig.host,
-            port: @mailConfig.port,
-            auth:
-                user: @mailConfig.user,
-                pass: @mailConfig.password
+exports.gSendEmail = (to, subject, content)->
+    throw new Error '无发信机制' unless config.mail?
+    mailOptions = {from: config.mail.user, to, subject, text: content}
+    pSendMail = prepareSender()
+    yield pSendMail mailOptions
 
-        @_pSendMail = Promise.promisify transporter.sendMail.bind(transporter)
+pSendMail = null
+prepareSender = ->
+    return pSendMail if pSendMail?
 
-    gSendEmail: (to, subject, content)->
-        mailOptions = {from: @mailConfig.user, to, subject, text: content}
-        yield @_pSendMail mailOptions
-
-exports.MailService = MailService
+    transporter = nodemailer.createTransport
+        host: config.mail.host,
+        port: config.mail.port,
+        auth:
+            user: config.mail.user,
+            pass: config.mail.password
+    pSendMail = Promise.promisify transporter.sendMail.bind(transporter)
+    pSendMail
