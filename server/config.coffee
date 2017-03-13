@@ -5,7 +5,7 @@ exports.uploadPath = ""
 exports.httpBodyMaxFieldsSize = 6 * 1024 * 1024
 
 exports.sessionExpireAtServer = 1000 * 60 * 60 * 24 * 15; #  15 day
-exports.usernameFields = 'username'
+exports.usernameFields = ['username']
 
 exports.metaDir = '/Users/maximus/var/fcms2/meta/weshop/';
 

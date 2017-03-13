@@ -81,6 +81,8 @@ exports.stringArrayToObjectIdArraySilently = (strings)->
     return ids
 
 exports.toMongoCriteria = (criteria)->
+    return {} unless criteria
+
     __type = criteria.__type
     delete criteria.__type
 

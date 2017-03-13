@@ -4,11 +4,11 @@ error = require '../error'
 UserService = require '../security/UserService'
 
 exports.gIdentifyUser = (next)->
-    trackId = @cookies.get(appName + 'TID', {signed: true})
+    trackId = @cookies.get('TID', {signed: true})
     @state.trackId = trackId
 
-    userId = @cookies.get(appName + 'UserId', {signed: true})
-    userToken = @cookies.get(appName + 'UserToken', {signed: true})
+    userId = @cookies.get('UserId', {signed: true})
+    userToken = @cookies.get('UserToken', {signed: true})
 
     if userId && userToken
         try

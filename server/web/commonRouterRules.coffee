@@ -29,7 +29,7 @@ exports.addCommonRouteRules = (rrr)->
 
     UserHandler = require '../handler/UserHandler'
 
-    rrr.get '/ping', {auth: true}, UserHandler.gPing
+    rrr.get '/api/ping', {auth: true}, UserHandler.gPing
     rrr.post '/api/sign-in', {}, UserHandler.gSignIn
     rrr.post '/api/sign-out', {auth: true}, UserHandler.gSignOut
     rrr.post '/api/change-password', {action: 'ChangePassword'}, UserHandler.gChangePassword

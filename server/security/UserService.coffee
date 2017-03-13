@@ -177,9 +177,9 @@ _gRemoveAllUserSessionOfUser = (userId) ->
 
 _gAddInitAdmin = ->
     hasAdmin = yield from EntityService.gFindOneByCriteria(null, userMeta, {admin: true})
-    return unless hasAdmin?
+    return if hasAdmin
 
-    log.system.info 'Create default admin user!!!'
+    log.system.info 'Create default admin user'
     yield from EntityService.gCreate(null, userMeta, {
         _id: Meta.newObjectId().toString(), admin: true
         username: 'admin', password: Meta.hashPassword('admin'),
