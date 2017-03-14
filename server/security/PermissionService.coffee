@@ -5,5 +5,5 @@ exports.permissionArrayToSet = (acl)->
     acl.menu = new Set(acl.menu) if acl.menu
     acl.button = new Set(acl.button) if acl.button
     acl.action = new Set(acl.action) if acl.action
-    # acl.entity = new Set(acl.entity) if acl.entity
+    acl.entity = new Set(acl.entity) if acl.entity
     acl.field = new Set(acl.field) if acl.field

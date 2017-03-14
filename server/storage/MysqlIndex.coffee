@@ -2,7 +2,7 @@ Meta = require '../Meta'
 log = require '../log'
 
 exports.gSyncWithMeta = (mysql)->
-    entities = Meta.getAllMeta().entities
+    entities = Meta.getEntities()
 
     for entityName, entityMeta of entities
         continue unless entityMeta.db == Meta.DB.mysql

@@ -6,7 +6,7 @@ F.toMetaIndex = ->
         $view = $(FT.MetaIndex()).appendTo($page.find('.page-content'))
 
         refreshLists = ->
-            $view.find('.entity-list').remove()
+            $view.find('.list').remove()
             q = F.fetchMeta()
             q.catch F.alertAjaxError
             q.then ->
@@ -16,21 +16,24 @@ F.toMetaIndex = ->
 
         $view.find('.refresh-list').on 'click', -> refreshLists()
 
-        $view.find('.add-entity').on 'click', ->
-            q = F.api.get 'meta/entity/_empty'
-            q.catch F.alertAjaxError
-            q.then (em)->
-                F.toEditEntityMeta null, em
+        $view.find('.add-entity').on 'click', -> F.toEditEntityMeta null
 
-        $view.on 'click', '.entity', ->
-            F.toEditEntityMeta $(this).attr('name')
+        $view.on 'click', '.entity', -> F.toEditEntityMeta $(this).attr('name')
 
         $view.on 'click', '.remove-entity', ->
             name = $(this).attr('name')
             return unless confirm "确定删除 #{name}？"
             q = F.api.remove 'meta/entity/' + name
             q.catch F.alertAjaxError
-            q.then ->
-                refreshLists()
+            q.then -> refreshLists()
 
-        $view.find('.add-option').on 'click', -> false
+        $view.find('.add-view').on 'click', -> F.toEditEntityViewMeta null
+
+        $view.on 'click', '.view', -> F.toEditEntityViewMeta $(this).attr('name')
+
+        $view.on 'click', '.remove-view', ->
+            name = $(this).attr('name')
+            return unless confirm "确定删除 #{name}？"
+            q = F.api.remove 'meta/view/' + name
+            q.catch F.alertAjaxError
+            q.then -> refreshLists()

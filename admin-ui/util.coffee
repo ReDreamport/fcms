@@ -167,3 +167,9 @@ F.optionsArrayToMap = (options)->
     for o in options
         map[o.name] = o.label
     map
+
+F.assign = (sources...)->
+    r = {}
+    for s in sources
+        r[k] = v for k,v of s
+    r

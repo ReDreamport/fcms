@@ -16,7 +16,7 @@ exports.ObjectIdStringLength = 24
 exports.FieldDataTypes = ["ObjectId", "String", "Password", "Boolean", "Int", "Float",
     "Date", "Time", "DateTime",
     "Image", "File"
-    "Component", "Reference"]
+    "Component", "Reference", "Object"]
 
 # MongoDB存储类型
 MongoPersistTypes = ["ObjectId", "String", "Boolean", "Number", "Date", 'Document']
@@ -30,14 +30,25 @@ exports.AllPersistTypes = MongoPersistTypes.concat(MySQLPersistTypes)
 exports.InputTypes = ["Text", "Password", "TextArea", "RichText", "Select", "Check", "Int", "Float", "CheckList"
     "Date", "Time", "DateTime", "File", "Image", "InlineComponent", "PopupComponent", "TabledComponent", "Reference"]
 
+exports.actions = {}
+
 isDateOrTimeType = (fieldType)-> fieldType == "Date" || fieldType == "Time" || fieldType == "DateTime"
 
 metaCache = null
+enhancedViewMetaCache = {}
 metaDir = null
 
-exports.getAllMeta = -> metaCache
+exports.getMetaCache = -> metaCache
 
-exports.getEntityMeta = (name)-> metaCache.entities[name]
+# 获取实体或视图（合并后的视图）
+exports.getEntityMeta = (name)->
+    metaCache.entities[name] || enhancedViewMetaCache[name]
+
+# 获取纯实体
+exports.getEntities = -> metaCache.entities
+
+# 前端使用的元数据
+exports.getMetaForFront = -> {entities: metaCache.entities, views: enhancedViewMetaCache}
 
 exports.gLoad = (theMetaDir)->
     metaDir = theMetaDir
@@ -46,16 +57,33 @@ exports.gLoad = (theMetaDir)->
     catch e
         log.system.error e, "fail to load meta"
 
-    meta = meta || {entities: {}, options: {}, version: 0}
+    meta = meta || {entities: {}, views: {}, version: 0}
+    meta.entities = meta.entities || {}
+    meta.views = meta.views || {}
+
     metaCache = require('./SystemMeta').patchMeta(meta)
-    log.system.info 'meta ready'
+
+    enhanceViews()
+
+    log.system.info 'Meta loaded'
 
 exports.gSaveEntityMeta = (entityName, entityMeta)->
     metaCache.entities[entityName] = entityMeta
+    enhanceViews()
     yield from _gPersistMeta()
 
 exports.gRemoveEntityMeta = (entityName)->
     delete metaCache.entities[entityName]
+    yield from _gPersistMeta()
+
+exports.gSaveViewMeta = (viewName, viewMeta)->
+    metaCache.views[viewName] = viewMeta
+    enhanceViews()
+    yield from _gPersistMeta()
+
+exports.gRemoveViewMeta = (viewName)->
+    delete metaCache.views[viewName]
+    delete enhancedViewMetaCache[viewName]
     yield from _gPersistMeta()
 
 _gPersistMeta = ->
@@ -68,7 +96,29 @@ _gPersistMeta = ->
     metaCache.version++
     yield util.pWriteJsonFile path.join(metaDir, "meta.json"), metaCache
 
+# 补全视图的元数据
+enhanceViews = ->
+    enhancedViewMetaCache = {}
+
+    for viewName, viewMeta of metaCache.views
+        backEntityMeta = metaCache.entities[viewMeta.backEntity]
+        enhancedViewMeta = _.clone(backEntityMeta)
+        for k, v of viewMeta
+            enhancedViewMeta[k] = v if v? # 覆盖
+
+        enhancedViewMeta.fields = {}
+        for fieldName, fieldMeta of viewMeta.fields
+            backFieldMeta = _.find backEntityMeta.fields, (f)-> f.name == fieldName
+            enhancedFieldMeta = _.clone(backFieldMeta)
+            for k,v of fieldMeta
+                enhancedFieldMeta[k] = v if v? # 覆盖
+
+            enhancedViewMeta.fields[fieldName] = enhancedFieldMeta
+
+        enhancedViewMetaCache[viewName] = enhancedViewMeta
+
 # 将 HTTP 输入的实体或组件值规范化
+# 过滤掉元数据中没有的字段
 exports.parseEntity = (entityInput, entityMeta)->
     return entityInput unless entityInput?
     return undefined unless _.isObject(entityInput)
@@ -107,13 +157,10 @@ exports.parseFieldValue = (value, fieldMeta)->
         else
             mongo.stringToObjectIdSilently value
     else if fieldMeta.type == "Reference"
-        refEntityMeta = metaCache.entities[fieldMeta.refEntity]
-        if refEntityMeta
-            idMeta = refEntityMeta.fields._id
-            exports.parseFieldValue(value, idMeta)
-        else
-            log.system.error 'No ref entity' + {refEntity: fieldMeta.refEntity, fieldName: fieldMeta.name}
-            null
+        refEntityMeta = exports.getEntityMeta fieldMeta.refEntity
+        throw new Error "No ref entity [#{fieldMeta.refEntity}]. Field #{fieldMeta.name}" unless refEntityMeta?
+        idMeta = refEntityMeta.fields._id
+        exports.parseFieldValue(value, idMeta)
     else if fieldMeta.type == "Boolean"
         if _.isArray value
             util.stringToBoolean(i) for i in value
@@ -130,8 +177,10 @@ exports.parseFieldValue = (value, fieldMeta)->
         else
             util.stringToFloat(value)
     else if fieldMeta.type == "Component"
+        refEntityMeta = exports.getEntityMeta fieldMeta.refEntity
+        throw new Error "No ref entity [#{fieldMeta.refEntity}]. Field #{fieldMeta.name}" unless refEntityMeta?
+
         if _.isArray value
-            refEntityMeta = metaCache.entities[fieldMeta.refEntity]
             exports.parseEntity(i, refEntityMeta) for i in value
         else
             exports.parseEntity value, refEntityMeta
@@ -166,17 +215,15 @@ exports.outputFieldToHTTP = (fieldValue, fieldMeta)->
         else
             util.dateToLong(fieldValue)
     else if fieldMeta.type == "Component"
+        refEntityMeta = exports.getEntityMeta fieldMeta.refEntity
+        throw new Error "No ref entity [#{fieldMeta.refEntity}]. Field #{fieldMeta.name}" unless refEntityMeta?
+
         if fieldMeta.multiple
-            refEntityMeta = metaCache.entities[fieldMeta.refEntity]
             (exports.outputEntityToHTTP(i, refEntityMeta) for i in fieldValue)
         else
             exports.outputEntityToHTTP(fieldValue, refEntityMeta)
     else if fieldMeta.type == "Reference"
-        refEntityMeta = metaCache.entities[fieldMeta.refEntity]
-        unless refEntityMeta
-            throw new Error "Cannot find ref entity [" + fieldMeta.refEntity + "] for field " + fieldMeta.name
-        idMeta = refEntityMeta.fields._id
-        exports.outputFieldToHTTP(fieldValue, idMeta)
+        fieldValue # TODO 原样输出即可
     else if fieldMeta.type == "Password"
         undefined
     else

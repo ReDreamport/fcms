@@ -8,6 +8,8 @@ EntityService = require '../service/EntityService'
 
 Mysql = require '../storage/Mysql'
 
+EntityInputBridge = require './EntityInputBridge'
+
 exports.gCreateEntity = ->
     entityName = @params.entityName
     entityMeta = Meta.getEntityMeta(entityName)
@@ -19,13 +21,16 @@ exports.gCreateEntity = ->
     throw new error.UserError("EmptyOperation") unless instance
 
     instance = Meta.parseEntity(instance, entityMeta)
+    # TODO 按权限字段过滤
 
     fieldCount = 0
     for key, value of instance
         if _.isNull(value) then delete instance[key] else fieldCount++
     throw new error.UserError("EmptyOperation") unless fieldCount
 
-    instance._createdBy = @state.user._id
+    instance._createdBy = @state.user?._id
+
+    entityMeta = yield from EntityInputBridge.gCreate(entityMeta, instance)
 
     r = yield from EntityService.gWithTransaction entityMeta, (conn)->
         yield from EntityService.gCreate(conn, entityMeta, instance)
@@ -44,9 +49,11 @@ exports.gUpdateEntityById = ->
     instance = @request.body
     _version = instance._version
     instance = Meta.parseEntity(instance, entityMeta)
-    instance._modifiedBy = @state.user._id
+    # TODO 按权限字段过滤
 
-    # log.debug 'update ', instance
+    instance._modifiedBy = @state.user?._id
+
+    entityMeta = yield from EntityInputBridge.gUpdate(entityMeta, instance, id)
 
     yield from EntityService.gWithTransaction entityMeta, (conn)->
         yield from EntityService.gUpdateByIdVersion(conn, entityMeta, id, _version, instance)
@@ -63,14 +70,18 @@ exports.gUpdateEntityInBatch = ->
     idVersions = patch.idVersions
     throw new error.UserError('EmptyOperation') unless idVersions.length > 0
     delete patch.idVersions
+    iv.id = Meta.parseId(iv.id, entityMeta) for iv in idVersions
 
     patch = Meta.parseEntity(patch, entityMeta)
-    patch._modifiedBy = @state.user._id
+    # TODO 按权限字段过滤
+
+    patch._modifiedBy = @state.user?._id
+
+    entityMeta = yield from EntityInputBridge.gUpdateInBatch(entityMeta, patch, idVersions)
 
     yield from EntityService.gWithTransaction entityMeta, (conn)->
         for p in idVersions
-            id = Meta.parseId(p.id, entityMeta)
-            yield from EntityService.gUpdateByIdVersion(conn, entityMeta, id, p._version, patch)
+            yield from EntityService.gUpdateByIdVersion(conn, entityMeta, p.id, p._version, patch)
     @status = 204
 
 exports.gDeleteEntityInBatch = ->
@@ -86,6 +97,8 @@ exports.gDeleteEntityInBatch = ->
     ids = util.splitString(ids, ",")
     ids = Meta.parseIds(ids, entityMeta)
     throw new error.UserError('EmptyOperation') unless ids.length > 0
+
+    entityMeta = yield from EntityInputBridge.gDeleteInBatch(entityMeta, ids)
 
     yield from EntityService.gWithTransaction entityMeta, (conn)->
         yield from EntityService.gRemoveMany(conn, entityMeta, ids)
@@ -103,6 +116,8 @@ exports.gRecoverInBatch = ->
     ids = Meta.parseIds(ids, entityMeta)
     throw new error.UserError('EmptyOperation') unless ids.length > 0
 
+    entityMeta = yield from EntityInputBridge.gRecoverInBatch(entityMeta, ids)
+
     yield from EntityService.gWithTransaction entityMeta, (conn)->
         yield from EntityService.gRecoverMany(conn, entityMeta, ids)
     @status = 204
@@ -116,10 +131,13 @@ exports.gFindOneById = ->
     entityId = Meta.parseId @params.id, entityMeta
     return @status = 404 unless entityId?
 
-    entity = yield from EntityService.gWithoutTransaction entityMeta, (conn)->
-        yield from EntityService.gFindOneById(conn, entityMeta, entityId, {repo: @query?._repo})
+    backEntityMeta = Meta.getEntityMeta(entityMeta.backEntity) || entityMeta
+    entity = yield from EntityService.gWithoutTransaction backEntityMeta, (conn)->
+        yield from EntityService.gFindOneById(conn, backEntityMeta, entityId, {repo: @query?._repo})
 
-    # TODO 字段过滤
+    yield from EntityInputBridge.gAfterFindOne(entityMeta, entity, @state.user?._id)
+
+    # TODO 按权限字段过滤
 
     entity = Meta.outputEntityToHTTP(entity, entityMeta)
 
@@ -134,7 +152,11 @@ exports.gList = ->
     throw new error.UserError('NoSuchEntity') unless entityMeta
 
     query = exports.parseListQuery(entityMeta, @query)
-    query.entityMeta = entityMeta
+
+    backEntityMeta = Meta.getEntityMeta(entityMeta.backEntity) || entityMeta
+    query.entityMeta = backEntityMeta
+
+    yield from EntityInputBridge.gModifyListQuery(entityMeta, query, @state.user?._id)
 
     r = yield from EntityService.gWithoutTransaction entityMeta, (conn)->
         yield from EntityService.gList conn, query

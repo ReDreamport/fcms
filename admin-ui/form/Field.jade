@@ -2,7 +2,7 @@
     .fw-field-title
         .field-label=field.label
         .field-actions
-            if field.type == 'File' || field.type == 'Image'
+            if field.inputType == 'File' || field.inputType == 'Image'
                 if !field.readonly
                     a.select-file.fw-icon-button.iconfont.icon-file(href="javascript:")
                         // IE 的文件控件安全限制
@@ -15,7 +15,7 @@
                     a.fw-add-item-component.fw-icon-button.iconfont.icon-add(href="javascript:")
                     a.fw-remove-all-item-component.fw-icon-button.iconfont.icon-clear(href="javascript:")
                     a.fw-hide-all-item-component.fw-icon-button.fa.iconfont.icon-hide(href="javascript:")
-            else if field.type == 'Reference'
+            else if field.inputType == 'Reference'
                 if !field.readonly
                     a.fw-add-ref.fw-icon-button.iconfont.icon-select(href="javascript:")
                     a.fw-remove-all-ref.fw-icon-button.iconfont.icon-clear(href="javascript:")

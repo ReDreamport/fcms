@@ -1,6 +1,6 @@
 fetchMenu = ->
     F.$mainPages.html 'fetching menu...'
-    q = F.api.get 'entity/F_Menu?pageNo=1&pageSize=-1'
+    q = F.api.get 'entity/F_Menu?pageNo=1&pageSize=1'
     q.catch -> q = null
     q.then (r)-> r.page?[0]
 

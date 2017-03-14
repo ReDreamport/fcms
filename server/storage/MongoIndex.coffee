@@ -5,7 +5,7 @@ log = require '../log'
 exports.gSyncWithMeta = (mongo)->
     db = yield from mongo.gDatabase()
 
-    entities = Meta.getAllMeta().entities
+    entities = Meta.getEntities()
 
     for entityName, entityMeta of entities
         continue unless entityMeta.db == Meta.DB.mongo

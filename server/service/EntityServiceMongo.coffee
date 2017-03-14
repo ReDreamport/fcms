@@ -172,10 +172,13 @@ _toDupKeyError = (e, entityMeta)->
 _objectToMongoUpdate = (object)->
     return null unless _.size object
 
+    delete object._version
+    delete object._id
+
     set = {}
     unset = {}
 
-    for key, value of instance
+    for key, value of object
         if value?
             set[key] = value
         else

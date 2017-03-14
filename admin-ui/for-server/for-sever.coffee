@@ -34,6 +34,7 @@ F.optionsOfPersistType = (fieldName, form, dependentValue)->
         when "File" then ["String", "varchar"]
         when "Component" then ['Document']
         when "Reference" then ["ObjectId", "String", "varchar", "char"]
+        when "Object" then ['Document']
     stringArrayToOptionArray options
 
 F.optionsOfEntityPermissions = (fieldName, form, dependentValue)->
@@ -150,3 +151,59 @@ F.enhanceFieldMetaEdit = (entityMeta, form)->
     onTypeChange()
     onMultipleChange()
     onInputTypeChange()
+
+F.emptyFunction = -> false
+
+F.inputACL = {
+    buildField: (form, fieldName, $fieldInputSlot, entityInitValue) ->
+        aclValue = entityInitValue[fieldName] || {}
+        q = F.api.get 'meta/actions'
+        q.catch F.alertAjaxError
+        q.then (actions)->
+            $fieldInputSlot.append FT.InputACL({aclValue, menuGroups: F.menuData.menuGroups, actions})
+            $selectSection = $fieldInputSlot.find('.select-section:first')
+            $selectSection.change ->
+                $fieldInputSlot.find('.acl-section').hide()
+                $fieldInputSlot.find('.acl-section.' + $selectSection.val()).show()
+
+            $selectEntityToFields = $fieldInputSlot.find('.select-entity-to-fields:first')
+            $selectEntityToFields.change ->
+                $fieldInputSlot.find('.acl-field-entity').hide()
+                $fieldInputSlot.find('.acl-field-entity.acl-field-' + $selectEntityToFields.val()).show()
+
+    getInput: (form, fieldName)->
+        $field = F.Form.get$field(form, fieldName)
+
+        acl = {}
+
+        acl.menu = []
+        $field.find('.acl-menu:first input:checked').each ->
+            acl.menu.push $(this).val()
+
+        acl.action = []
+        $field.find('.acl-action:first input:checked').each ->
+            acl.menu.push $(this).val()
+
+        acl.entity = {}
+        $field.find('.acl-entity:first tbody tr').each ->
+            $tr = $ this
+            entityName = $tr.attr 'entityName'
+            rights = []
+            acl.entity[entityName] = rights
+            $tr.find('input:checked').each ->
+                rights.push $(this).val()
+
+        acl.field = {}
+        $field.find('.acl-field-entity').each ->
+            $entity = $ this
+            entity = {}
+            acl.field[$entity.attr('entityName')] = entity
+            $entity.find('tbody tr').each ->
+                $tr = $ this
+                field = []
+                entity[$tr.attr('fieldName')] = field
+                $tr.find('input:checked').each ->
+                    field.push $(this).val()
+
+        acl
+}

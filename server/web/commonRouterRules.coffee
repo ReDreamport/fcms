@@ -1,6 +1,8 @@
 router = require './router'
 
-exports.actions =
+Meta = require '../Meta'
+
+actions =
     ReadMeta: '读取元数据'
     WriteMeta: '修改元数据'
     ChangePassword: '修改密码接口'
@@ -12,6 +14,8 @@ exports.actions =
     ES: '配置搜索引擎'
     Promotion: '推广活动'
 
+Meta.actions[k] = v for k,v of actions
+
 exports.addCommonRouteRules = (rrr)->
     # ======================================
     # 元数据管理
@@ -19,9 +23,12 @@ exports.addCommonRouteRules = (rrr)->
     MetaHandler = require('../handler/MetaHandler')
 
     rrr.get '/meta', {action: 'ReadMeta'}, MetaHandler.gGetAllMeta
-    rrr.get '/meta/entity/_empty', {action: 'WriteMeta'}, MetaHandler.gGetEmptyEntityMeta
+    rrr.get '/meta-empty', {action: 'WriteMeta'}, MetaHandler.gGetEmptyEntityMeta
+    rrr.get '/meta/:type/:name', {action: 'ReadMeta'}, MetaHandler.gGetMeta
     rrr.put '/meta/:type/:name', {action: 'WriteMeta'}, MetaHandler.gSaveMeta
     rrr.del '/meta/:type/:name', {action: 'WriteMeta'}, MetaHandler.gRemoveMeta
+
+    rrr.get '/meta/actions', {action: 'WriteMeta'}, MetaHandler.gGetActions
 
     # ======================================
     # 用户

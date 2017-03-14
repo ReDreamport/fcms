@@ -98,14 +98,18 @@ FF.buildForm = (entityName, entityInitValue)->
             $field.appendTo($formInput)
             $fieldInputSlot = $('.fw-field-input', $field)
 
-            inputType = F.Form[fieldMeta.inputType]
-            console.log("Not found input type " + fieldMeta.inputType + ", fieldName: " + fieldName) unless inputType
-            inputType?.buildField form, fieldName, $fieldInputSlot, entityValue
+            if fieldMeta.inputFunc
+                inputFunc = F.ofPropertyPath window, fieldMeta.inputFunc
+                inputFunc.buildField form, fieldName, $fieldInputSlot, entityValue
+            else
+                inputType = F.Form[fieldMeta.inputType]
+                console.log("Not found input type " + fieldMeta.inputType + ", fieldName: " + fieldName) unless inputType
+                inputType?.buildField form, fieldName, $fieldInputSlot, entityValue
 
-            # 排序使能
-            if fieldMeta.multiple
-                # FS.sortable({$container: $field, sortableNodeSelector: '.fw-field-item'})
-                $field.sortable({items: '.fw-field-item'})
+                # 排序使能
+                if fieldMeta.multiple
+                    # FS.sortable({$container: $field, sortableNodeSelector: '.fw-field-item'})
+                    $field.sortable({items: '.fw-field-item'})
 
     form.rebuildInput entityInitValue
 
@@ -177,12 +181,19 @@ FF.$formToForm = ($form)->
 
 FF.get$field = (form, fieldName)-> form.$form.find(".fn-#{fieldName}.#{form.fClass}")
 
+FF.collectFieldInput = (form, fieldMeta)->
+    if fieldMeta.inputFunc
+        inputFunc = F.ofPropertyPath window, fieldMeta.inputFunc
+        inputFunc.getInput(form, fieldMeta.name)
+    else
+        FF[fieldMeta.inputType].getInput(form, fieldMeta.name)
+
 # 收集界面上输入的实体的值
 FF.collectFormInput = (form, formValue)->
     fields = form.entityMeta.fields
     # 不要把不需要输入的值清掉
     for fieldName, fieldMeta of fields when not fieldMeta.readonly
-        fv = FF[fieldMeta.inputType].getInput(form, fieldName)
+        fv = FF.collectFieldInput form, fieldMeta
         formValue[fieldName] = fv if fv != undefined
     # 取此表单的版本号
     _version = form.$form.attr('_version')

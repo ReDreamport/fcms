@@ -2,8 +2,6 @@ _ = require 'lodash'
 
 Meta = require './Meta'
 
-exports.permissions = [] # TODO
-
 patchSystemFields = (entityMeta)->
     fields = {}
     dbType = entityMeta.db
@@ -133,6 +131,8 @@ SystemEntities = {
             inputType:
                 name: 'inputType', label: '输入类型', type: 'String', inputType: "Select"
                 optionsDependOnField: 'type', optionsFunc: 'F.optionsOfInputType', hideInListPage: true
+            inputFunc:
+                name: 'inputFunc', label: '输入构建器', type: 'String', inputType: "Text", hideInListPage: true
             inputRequired:
                 name: 'inputRequired', label: '输入值不能为空', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
@@ -217,6 +217,96 @@ SystemEntities = {
                 name: 'options', label: '选项列表', type: 'Component', refEntity: "F_FieldInputOption",
                 multiple: true, inputType: "InlineComponent"
     }
+    F_EntityViewMeta: {
+        system: true, noPatchSystemFields: true
+        name: 'F_EntityViewMeta', label: '实体视图元数据'
+        fields:
+            system:
+                name: 'system', label: '系统实体', type: 'Boolean', inputType: "Check", readonly: true
+            name:
+                name: 'name', label: '名称', type: 'String', inputType: "Text"
+            label:
+                name: 'label', label: '显示名', type: 'String', inputType: "Text"
+            backEntity:
+                name: 'backEntity', label: '真实体', type: 'String', inputType: "Text"
+            noCreate:
+                name: 'noCreate', label: '禁止新增', type: 'Boolean', inputType: "Check"
+            noEdit:
+                name: 'noEdit', label: '禁止编辑', type: 'Boolean', inputType: "Check"
+            noDelete:
+                name: 'noDelete', label: '禁止删除', type: 'Boolean', inputType: "Check"
+            entityNumMin:
+                name: 'entityNumMin', label: '实体数量下限', type: 'Int', inputType: "Int"
+            entityNumMax:
+                name: 'entityNumMax', label: '实体数量上限', type: 'Int', inputType: "Int"
+            digestFields:
+                name: 'digestFields', label: '摘要字段', type: 'String', inputType: "Text"
+            editEnhanceFunc:
+                name: 'editEnhanceFunc', label: '编辑增强脚本', type: 'String', inputType: "Text"
+                hideInListPage: true
+            fields:
+                name: 'fields', label: '字段列表', type: 'Component', refEntity: "F_FieldViewMeta",
+                inputType: "PopupComponent", multiple: true
+    }
+    F_FieldViewMeta: {
+        system: true, noPatchSystemFields: true
+        name: 'F_FieldViewMeta', label: '字段视图元数据'
+        digestFields: 'name,label,type,multiple'
+        editEnhanceFunc: 'F.emptyFunction'
+        fields:
+            system:
+                name: 'system', label: '系统字段', type: 'Boolean', inputType: "Check", readonly: true
+                hideInListPage: true
+            name:
+                name: 'name', label: '字段名', type: 'String', inputType: "Text"
+            label:
+                name: 'label', label: '显示名', type: 'String', inputType: "Text"
+            comment:
+                name: 'comment', label: '开发备注', type: 'String', inputType: "TextArea"
+                hideInListPage: true
+            useGuide:
+                name: 'useGuide', label: '使用备注', type: 'String', inputType: "Text"
+                hideInListPage: true
+            refEntity:
+                name: 'refEntity', label: '关联实体', type: 'String', inputType: "Text"
+            inputType:
+                name: 'inputType', label: '输入类型', type: 'String', inputType: "Select"
+                optionsDependOnField: 'type', optionsFunc: 'F.optionsOfInputType', hideInListPage: true
+            inputRequired:
+                name: 'inputRequired', label: '输入值不能为空', type: 'Boolean', inputType: "Check"
+                hideInListPage: true
+            readonly:
+                name: 'readonly', label: '只读', type: 'Boolean', inputType: "Check"
+                hideInListPage: true
+            hideInCreatePage:
+                name: 'hideInCreatePage', label: '新增页面不显示', type: 'Boolean', inputType: "Check"
+                hideInListPage: true
+            hideInEditPage:
+                name: 'hideInEditPage', label: '编辑页面不显示', type: 'Boolean', inputType: "Check"
+                hideInListPage: true
+            hideInListPage:
+                name: 'hideInListPage', label: '列表页面不显示', type: 'Boolean', inputType: "Check"
+                hideInListPage: true
+            hideInViewPage:
+                name: 'hideInViewPage', label: '查看页面不显示', type: 'Boolean', inputType: "Check"
+                hideInListPage: true
+            options:
+                name: 'options', label: '输入选项', type: 'Component', refEntity: "F_FieldInputOption",
+                multiple: true, inputType: "InlineComponent", hideInListPage: true
+            optionsDependOnField:
+                name: 'optionsDependOnField', label: '输入选项随此字段改变', type: 'String', inputType: "Text"
+                hideInListPage: true
+            optionsFunc:
+                name: 'optionsFunc', label: '选项决定函数', type: 'String', inputType: "Text"
+                hideInListPage: true
+            groupedOptions:
+                name: 'groupedOptions', label: '分组的输入选项', type: 'Component',
+                refEntity: "F_FieldInputGroupedOptions", multiple: true, inputType: "InlineComponent"
+                hideInListPage: true
+            optionWidth:
+                name: 'optionWidth', label: '选项宽度', type: 'Int', inputType: "Int"
+                hideInListPage: true
+    }
     F_MongoIndex: {
         system: true, noPatchSystemFields: true
         name: 'F_MongoIndex', label: 'MongoDB索引'
@@ -272,7 +362,7 @@ SystemEntities = {
     }
     F_Menu: {
         system: true,
-        name: "F_Menu", label: '菜单', db: Meta.DB.mongo, tableName: 'F_Menu'
+        name: "F_Menu", label: '菜单', db: Meta.DB.mongo, tableName: 'F_Menu',
         fields:
             menuGroups:
                 name: "menuGroups", label: "菜单组", type: 'Component', refEntity: "F_MenuGroup",
@@ -300,38 +390,9 @@ SystemEntities = {
             callFunc:
                 name: 'callFunc', label: '调用函数名', type: 'String', inputType: "Text"
     }
-    F_SubApp: {
-        system: true
-        name: 'F_SubApp', label: '子应用'
-        db: Meta.DB.mongo, tableName: 'F_SubApp'
-        digestFields: 'name,label'
-        fields:
-            name:
-                name: 'name', label: '名称'
-                type: 'String', inputType: "Text", persistType: "String", asFastFilter: true
-            label:
-                name: 'label', label: '标签'
-                type: 'String', inputType: "Text", persistType: "String", asFastFilter: true
-            usernameFields:
-                name: 'usernameFields', label: "用户名字段列表"
-                type: 'String', multiple: true, inputType: "Text", persistType: "String"
-    }
-    F_Server: {
-        system: true
-        name: 'F_Server', label: '服务器'
-        db: Meta.DB.mongo, tableName: 'F_Server'
-        digestFields: 'host'
-        fields:
-            host:
-                name: 'host', label: '域名:端口'
-                type: 'String', inputType: "Text", persistType: "String"
-            app:
-                name: 'app', label: '所属子应用', asFastFilter: true
-                type: 'String', inputType: "Text", persistType: "String" # 不用 Reference！！
-    }
     F_User: {
         system: true, idType: 'String'
-        name: 'F_User', label: '用户'
+        name: 'F_User', label: '用户',
         db: Meta.DB.mongo, tableName: 'F_User'
         digestFields: 'username|nickname|phone|email|_id'
         mongoIndexes: [
@@ -366,64 +427,29 @@ SystemEntities = {
                 name: 'roles', label: '角色'
                 type: 'Reference', multiple: true, inputType: "Reference", refEntity: "F_UserRole"
                 persistType: "String"
-            subAppAccessible:
-                name: 'subAppAccessible', label: '可访问应用'
-                type: 'String', multiple: true, inputType: "Text", persistType: "String"
-            urlPermissions:
-                name: 'urlPermissions', label: '可访问链接'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String"
-                options: exports.permissions
-            entityPermissions:
-                name: 'entityPermissions', label: '可访问实体'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String", hideInListPage: true
-                optionsFunc: 'F.optionsOfEntityPermissions', optionWidth: "280px"
-            menuPermissions:
-                name: 'menuPermissions', label: '菜单权限'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String", hideInListPage: true
-                optionsFunc: 'F.optionsOfMenuPermissions', optionWidth: "200px"
-            fieldForbidden:
-                name: 'fieldForbidden', label: '字段过滤'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String", hideInListPage: true
-                optionsFunc: 'F.optionsOfEntitiesFields', optionWidth: "160px"
+            acl:
+                name: 'acl', label: 'ACL'
+                type: 'Object', multiple: false, inputFunc: "F.inputACL", persistType: "Document", hideInListPage: true
     }
     F_UserRole: {
         system: true, idType: 'String'
-        name: 'F_UserRole', label: '用户角色'
+        name: 'F_UserRole', label: '用户角色',
         db: Meta.DB.mongo, tableName: 'F_UserRole'
         digestFields: 'name'
         fields:
             name:
                 name: 'name', label: '角色名', asFastFilter: true
                 type: 'String', inputType: "Text", persistType: "String"
-            subAppAccessible:
-                name: 'subAppAccessible', label: '可访问应用'
-                type: 'String', multiple: true, inputType: "Text", persistType: "String"
-            urlPermissions:
-                name: 'urlPermissions', label: '可访问链接'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String"
-                options: exports.permissions, hideInListPage: true
-            entityPermissions:
-                name: 'entityPermissions', label: '可访问实体'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String", hideInListPage: true
-                optionsFunc: 'F.optionsOfEntityPermissions', optionWidth: "280px"
-            menuPermissions:
-                name: 'menuPermissions', label: '菜单权限'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String", hideInListPage: true
-                optionsFunc: 'F.optionsOfMenuPermissions', optionWidth: "200px"
-            fieldForbidden:
-                name: 'fieldForbidden', label: '字段过滤'
-                type: 'String', multiple: true, inputType: "CheckList", persistType: "String", hideInListPage: true
-                optionsFunc: 'F.optionsOfEntitiesFields', optionWidth: "160px"
+            acl:
+                name: 'acl', label: 'ACL'
+                type: 'Object', multiple: false, inputFunc: "F.inputACL", persistType: "Document", hideInListPage: true
     }
     F_UserSession:
         system: true
-        name: 'F_UserSession', label: '用户Session'
+        name: 'F_UserSession', label: '用户Session',
         db: Meta.DB.mongo, tableName: 'F_UserSession'
         digestFields: ''
         fields:
-            name:
-                name: 'subApp', label: '子应用'
-                type: 'String', inputType: "Text", persistType: "String"
             userId:
                 name: 'userId', label: '用户ID'
                 type: 'String', inputType: "Text", persistType: "String"
@@ -435,7 +461,7 @@ SystemEntities = {
                 type: 'Int', inputType: "Int", persistType: "Int"
     F_ListFilters:
         system: true
-        name: 'F_ListFilters', label: '列表查询条件'
+        name: 'F_ListFilters', label: '列表查询条件',
         db: Meta.DB.mongo, tableName: 'F_ListFilters'
         digestFields: 'name,entityName'
         fields:
@@ -456,7 +482,7 @@ SystemEntities = {
                 type: 'String', inputType: "Text", persistType: "String"
     F_Payment:
         system: true
-        name: 'F_Payment', label: '支付记录'
+        name: 'F_Payment', label: '支付记录',
         db: Meta.DB.mysql, tableName: 'F_Payment'
         digestFields: '_id,provider,state,business,businessId'
         fields:
@@ -490,13 +516,18 @@ SystemEntities = {
                 type: 'String', inputType: "Text", readonly: true, persistType: "varchar", sqlColM: 60
     F_TppCallback:
         system: true
-        name: 'F_TppCallback', label: '第三方支付回调'
+        name: 'F_TppCallback', label: '第三方支付回调',
         db: Meta.DB.mongo, tableName: 'F_TppCallback'
         digestFields: ''
         fields:
             payTranId:
-                name: 'payTranId', label: '支付'
-                type: 'Reference', refEntity: 'F_TppTran', inputType: "Reference", readonly: true, persistType: "String"
+                name: 'payTranId',
+                label: '支付'
+                type: 'Reference',
+                refEntity: 'F_TppTran',
+                inputType: "Reference",
+                readonly: true,
+                persistType: "String"
             tpTradeNo:
                 name: 'tpTradeNo', label: '渠道单号'
                 type: 'String', inputType: "Text", readonly: true, persistType: "String"
@@ -518,7 +549,7 @@ SystemEntities = {
                 type: 'String', inputType: "TextArea", readonly: true, persistType: "String"
     F_PageHead:
         system: true
-        name: 'F_PageHead', label: '页面头部信息'
+        name: 'F_PageHead', label: '页面头部信息',
         db: Meta.DB.mongo, tableName: 'F_PageHead'
         digestFields: 'key'
         fields:
@@ -533,7 +564,7 @@ SystemEntities = {
                 type: 'String', inputType: "Text", persistType: "String"
     F_Promotion:
         system: true
-        name: 'F_Promotion', label: '推广活动'
+        name: 'F_Promotion', label: '推广活动',
         db: Meta.DB.mongo, tableName: 'F_Promotion'
         digestFields: 'name'
         fields:
@@ -545,7 +576,7 @@ SystemEntities = {
                 type: 'String', inputType: "Text", persistType: "String"
     F_PromotionPageView:
         system: true, noServiceCache: true
-        name: 'F_PromotionPageView', label: '推广活动PV记录'
+        name: 'F_PromotionPageView', label: '推广活动PV记录',
         db: Meta.DB.mongo, tableName: 'F_PromotionPageView'
         digestFields: '',
         mongoIndexes: [
@@ -569,7 +600,7 @@ SystemEntities = {
                 type: 'DateTime', inputType: "DateTime", persistType: "Date"
     F_PromotionShareTrack:
         system: true, noServiceCache: true
-        name: 'F_PromotionShareTrack', label: '推广活动分享记录'
+        name: 'F_PromotionShareTrack', label: '推广活动分享记录',
         db: Meta.DB.mongo, tableName: 'F_PromotionShareTrack'
         digestFields: '',
         mongoIndexes: [
@@ -596,7 +627,7 @@ SystemEntities = {
                 type: 'DateTime', inputType: "DateTime", persistType: "Date"
     F_PromotionNocookieView:
         system: true, noServiceCache: true
-        name: 'F_PromotionNocookieView', label: '推广活动无Cookie浏览记录'
+        name: 'F_PromotionNocookieView', label: '推广活动无Cookie浏览记录',
         db: Meta.DB.mongo, tableName: 'F_PromotionNocookieView'
         digestFields: '',
         mongoIndexes: [
@@ -620,14 +651,36 @@ SystemEntities = {
                 type: 'DateTime', inputType: "DateTime", persistType: "Date"
 }
 
-exports.patchMeta = (meta)->
-    entities = meta.entities
+SystemViews = {
+    F_UserView: {
+        system: true, name: 'F_UserView', backEntity: 'F_User'
+        label: '用户视图1', digestFields: 'username|nickname|phone|email|_id'
+        editEnhanceFunc: ''
+        fields:
+            username:
+                name: 'username'
+            nickname:
+                name: 'nickname'
+            phone:
+                name: 'phone'
+            email:
+                name: 'email'
+            disabled:
+                name: 'disabled'
+    }
+}
 
+exports.patchMeta = (meta)->
     for entityName, entityMeta of SystemEntities
         #unless entities[entityName] # TODO 测试阶段覆盖
         patchSystemFields(entityMeta) unless entityMeta.noPatchSystemFields
         delete entityMeta.idType
-        entities[entityName] = entityMeta
+        meta.entities[entityName] = entityMeta
+
+    for viewName, viewMeta of SystemViews
+        #unless entities[entityName] # TODO 测试阶段覆盖
+        patchSystemFields(viewMeta) unless viewMeta.noPatchSystemFields
+        meta.views[viewName] = viewMeta
 
     meta
 
