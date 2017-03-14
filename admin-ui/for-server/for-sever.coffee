@@ -161,15 +161,25 @@ F.inputACL = {
         q.catch F.alertAjaxError
         q.then (actions)->
             $fieldInputSlot.append FT.InputACL({aclValue, menuGroups: F.menuData.menuGroups, actions})
-            $selectSection = $fieldInputSlot.find('.select-section:first')
-            $selectSection.change ->
+            $fieldInputSlot.find('[name="section"]').click ->
                 $fieldInputSlot.find('.acl-section').hide()
-                $fieldInputSlot.find('.acl-section.' + $selectSection.val()).show()
+                $fieldInputSlot.find('.acl-section.' + $(this).val()).show()
 
             $selectEntityToFields = $fieldInputSlot.find('.select-entity-to-fields:first')
             $selectEntityToFields.change ->
                 $fieldInputSlot.find('.acl-field-entity').hide()
                 $fieldInputSlot.find('.acl-field-entity.acl-field-' + $selectEntityToFields.val()).show()
+
+            $fieldInputSlot.find('.check-all').click ->
+                $this = $ this
+                checked = $this.prop('checked')
+                $this.closest('.acl-section').find('input.right').prop('checked', checked)
+
+            $fieldInputSlot.find('.check-column').click ->
+                $this = $ this
+                checked = $this.prop('checked')
+                index = $this.attr('index')
+                $this.closest('table').find("tbody tr td:nth-child(#{index}) input").prop('checked', checked)
 
     getInput: (form, fieldName)->
         $field = F.Form.get$field(form, fieldName)
@@ -177,11 +187,11 @@ F.inputACL = {
         acl = {}
 
         acl.menu = []
-        $field.find('.acl-menu:first input:checked').each ->
+        $field.find('.acl-menu:first input.right:checked').each ->
             acl.menu.push $(this).val()
 
         acl.action = []
-        $field.find('.acl-action:first input:checked').each ->
+        $field.find('.acl-action:first input.right:checked').each ->
             acl.menu.push $(this).val()
 
         acl.entity = {}

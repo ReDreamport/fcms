@@ -1,81 +1,114 @@
--var entities = F.assign(F.meta.entities, F.meta.views)
+.input-acl
+    -var entities = F.assign(F.meta.entities, F.meta.views)
 
-select.select-section
-    option(value="acl-menu") 菜单
-    option(value="acl-action") 服务器接口
-    option(value="acl-entity") 实体
-    option(value="acl-field") 字段过滤
-
-.acl-section.acl-menu
-    .section-title 菜单
-    -var menuChecked = aclValue.menu || []
-    each menuGroup in menuGroups
-        each menuItem in menuGroup.menuItems
-            label
-                -var menuItemValue = menuItem.toEntity || menuItem.callFunc
-                input(type="checkbox", value=menuItemValue, checked=($.inArray(menuItemValue, menuChecked) >= 0))
-                | #{menuItem.label}
-
-.acl-section.acl-action.hidden
-    .section-title 服务器接口
-    -var actionsChecked = aclValue.action || []
-    each action, label in actions
+    div
         label
-            input(type="checkbox", value=action, checked=($.inArray(action, actionsChecked) >= 0))
-            | #{label}
+            input(name="section", type="radio", value="acl-menu", checked=true)
+            | 菜单
+        label
+            input(name="section", type="radio", value="acl-action")
+            | 服务器接口
+        label
+            input(name="section", type="radio", value="acl-entity")
+            | 实体
+        label
+            input(name="section", type="radio", value="acl-field")
+            | 字段过滤
 
-.acl-section.acl-entity.hidden
-    .section-title 实体
-    -var entitiesChecked = aclValue.entity || {}
-    table.simple
-        thead
-            tr
-                th 实体
-                th *
-                th 列表
-                th 查看
-                th 新增
-                th 更新
-                th 批量更新
-                th 删除
-                th 恢复
-        tbody
+    .acl-section.acl-menu
+        .section-title 菜单
+        div
+            label
+                input.check-all(type="checkbox")
+                | 全选/全不选
+        -var menuChecked = aclValue.menu || []
+        each menuGroup in menuGroups
+            each menuItem in menuGroup.menuItems
+                label
+                    -var menuItemValue = menuItem.toEntity || menuItem.callFunc
+                    input.right(type="checkbox", value=menuItemValue, checked=($.inArray(menuItemValue, menuChecked) >= 0))
+                    | #{menuItem.label}
+
+    .acl-section.acl-action.hidden
+        .section-title 服务器接口
+        div
+            label
+                input.check-all(type="checkbox")
+                | 全选/全不选
+        -var actionsChecked = aclValue.action || []
+        each action, label in actions
+            label
+                input.right(type="checkbox", value=action, checked=($.inArray(action, actionsChecked) >= 0))
+                | #{label}
+
+    .acl-section.acl-entity.hidden
+        .section-title 实体
+        -var entitiesChecked = aclValue.entity || {}
+        table.simple
+            thead
+                tr
+                    th 实体
+                    th *
+                    th 列表
+                    th 查看
+                    th 新增
+                    th 更新
+                    th 批量更新
+                    th 删除
+                    th 恢复
+                tr
+                    th
+                    each i in [2,3,4,5,6,7,8,9]
+                        th
+                            input.check-column(type="checkbox", index=i)
+            tbody
+                each entityMeta, entityName in entities
+                    -var entityRightChecked = entitiesChecked[entityName] ||[]
+                    tr(entityName=entityMeta.name)
+                        td #{entityMeta.label} [#{entityMeta.name}]
+                        each right in ["*","List","Get","Create","UpdateOne", "UpdateMany", "Remove", "Recover"]
+                            td.check-td
+                                input(type="checkbox", value=right, checked=($.inArray(right, entityRightChecked) >= 0))
+
+    .acl-section.acl-field.hidden
+        .section-title 字段过滤
+        -var fieldsChecked = aclValue.field || {}
+
+        div
+            label
+                input.check-all(type="checkbox")
+                | 全部实体全部字段全选/全不选
+
+        select.select-entity-to-fields
+            option(value="")
             each entityMeta, entityName in entities
-                -var entityRightChecked = entitiesChecked[entityName] ||[]
-                tr(entityName=entityMeta.name)
-                    td #{entityMeta.label} [#{entityMeta.name}]
-                    each right in ["*","List","Get","Create","UpdateOne", "UpdateMany", "Remove", "Recover"]
-                        td.check-td
-                            input(type="checkbox", value=right, checked=($.inArray(right, entityRightChecked) >= 0))
+                option(value=entityName) #{entityMeta.label} [#{entityMeta.name}]
 
-.acl-section.acl-field.hidden
-    .section-title 字段过滤
-    -var fieldsChecked = aclValue.field || {}
-    select.select-entity-to-fields
-        option(value="")
         each entityMeta, entityName in entities
-            option(value=entityName) #{entityMeta.label} [#{entityMeta.name}]
+            -var fieldsCheckedOfEntity = fieldsChecked[entityName] || {}
+            .acl-field-entity.hidden(entityName=entityName, class='acl-field-' + entityName)
+                .section-title #{entityMeta.label} [#{entityMeta.name}]
 
-    each entityMeta, entityName in entities
-        -var fieldsCheckedOfEntity = fieldsChecked[entityName] || {}
-        .acl-field-entity.hidden(entityName=entityName, class='acl-field-' + entityName)
-            .section-title #{entityMeta.label} [#{entityMeta.name}]
-
-            table.simple
-                thead
-                    tr
-                        th 字段
-                        th *
-                        th 新建
-                        th 编辑
-                        th 查看
-                        th 列表
-                tbody
-                    each fieldMeta, fieldName in entityMeta.fields
-                        -var fieldsCheckedOfFields = fieldsCheckedOfEntity[fieldName] || []
-                        tr(fieldName=fieldName)
-                            td #{fieldMeta.label} [#{fieldMeta.name}]
-                            each right in ["*","Create","Update","View","List"]
-                                td.check-td
-                                    input(type="checkbox", value=right, checked=($.inArray(right, fieldsCheckedOfFields) >= 0))
+                table.simple
+                    thead
+                        tr
+                            th 字段
+                            th *
+                            th 新建
+                            th 编辑
+                            th 查看
+                            th 列表
+                        tr
+                            th
+                            each i in [2,3,4,5,6]
+                                th
+                                    input.check-column(type="checkbox", index=i)
+                    tbody
+                        each fieldMeta, fieldName in entityMeta.fields
+                            -var fieldsCheckedOfFields = fieldsCheckedOfEntity[fieldName] || []
+                            tr(fieldName=fieldName)
+                                td #{fieldMeta.label} [#{fieldMeta.name}]
+                                each right in ["*","Create","Update","View","List"]
+                                    td.check-td
+                                        input.right(type="checkbox", value=right, checked=($.inArray(right, fieldsCheckedOfFields) >= 0))
 
