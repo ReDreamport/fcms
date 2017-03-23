@@ -17,7 +17,7 @@ userMeta = null
 userRoleMeta = null
 userSessionMeta = null
 
-exports.gInit = ->
+exports.init = ->
     userMeta = Meta.getEntityMeta('F_User')
     userRoleMeta = Meta.getEntityMeta("F_UserRole")
     userSessionMeta = Meta.getEntityMeta("F_UserSession")
@@ -31,8 +31,6 @@ exports.gInit = ->
             anonymousRole = null
             for id in ids
                 delete roleCache[id]
-
-    yield from _gAddInitAdmin()
 
 exports.gUserById = (id)->
     user = userCache[id]
@@ -174,13 +172,3 @@ exports.gResetPasswordByEmail = (email, password)->
 
 _gRemoveAllUserSessionOfUser = (userId) ->
     yield from EntityService.gRemoveManyByCriteria({}, userSessionMeta, {useId: userId})
-
-_gAddInitAdmin = ->
-    hasAdmin = yield from EntityService.gFindOneByCriteria(null, userMeta, {admin: true})
-    return if hasAdmin
-
-    log.system.info 'Create default admin user'
-    yield from EntityService.gCreate(null, userMeta, {
-        _id: Meta.newObjectId().toString(), admin: true
-        username: 'admin', password: Meta.hashPassword('admin'),
-    })

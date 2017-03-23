@@ -3,6 +3,7 @@ _ = require 'lodash'
 util = require '../util'
 error = require '../error'
 Meta = require '../Meta'
+log = require '../log'
 
 EntityService = require '../service/EntityService'
 
@@ -221,6 +222,9 @@ exports.parseListQuery = (entityMeta, query)->
 
         if criteria
             Meta.parseListQueryValue(criteria, entityMeta)
+            criteria.__type = 'relation'
+
+    # log.debug 'criteria', criteria
 
     # 整理排序所用字段
     sort = if query._sort

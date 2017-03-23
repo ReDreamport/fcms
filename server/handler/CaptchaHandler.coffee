@@ -1,9 +1,8 @@
 table = {}
-
 chance = new require('chance')()
-simpleCaptcha = require('simple-captcha')
 
 exports.generate = (next)->
+    simpleCaptcha = require('simple-captcha')
     captcha = simpleCaptcha.create({width: 100, height: 40})
     text = captcha.text()
     captcha.generate()

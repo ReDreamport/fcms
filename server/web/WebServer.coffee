@@ -5,6 +5,8 @@ log = require '../log'
 error = require '../error'
 config = require '../config'
 
+extension = require '../extension'
+
 server = null
 
 gCatchError = (next)->
@@ -67,6 +69,9 @@ exports.gStart = ->
     koaBody = require 'koa-body'
     formidableConfig = {uploadDir: config.uploadPath, keepExtensions: true, maxFieldsSize: config.httpBodyMaxFieldsSize}
     koaServer.use(koaBody(multipart: true, formidable: formidableConfig))
+
+    if extension.koaMiddlewareBeforeHandler
+        koaServer.use extension.koaMiddlewareBeforeHandler
 
     koaServer.use router.handleRoute # 开始处理路由
 

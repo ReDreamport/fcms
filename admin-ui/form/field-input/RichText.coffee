@@ -13,7 +13,7 @@ FF.RichText = {
                 'head', 'unorderlist', 'orderlist', 'alignleft', 'aligncenter', 'alignright',
                 '|', 'link', 'unlink', 'table', 'emotion', 'img'
             ];
-            editor.config.uploadImgUrl = F.apiRoot + "/rich-text-file"
+            editor.config.uploadImgUrl = F.apiRoot + "rich-text-file"
             editor.config.uploadImgFileName = "f0"
 
             editor.create()

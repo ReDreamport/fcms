@@ -35,7 +35,9 @@ gStart = (appConfig, addRouteRules)->
 
     # 用户
     UserService = require './security/UserService'
-    yield from UserService.gInit()
+    UserService.init()
+
+    yield from require('./init').gInit()
 
     # 路由表
     router = require './web/router'

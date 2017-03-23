@@ -63,6 +63,9 @@ exports.refresh = ->
     for key, route of routes
         url = route.url
         method = route.method
+
+        #log.debug "route #{method} #{url}"
+
         route.indexToVariable = {}
 
         if url == '' or url == '/'

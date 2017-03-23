@@ -2,18 +2,20 @@
     h2 实体列表
     table.simple
         each em, name in F.meta.entities
-            tr
-                td.label
-                    a.entity(href="javascript:", name=name)=em.label
-                td.name=name
-                td
-                    a.remove-entity(href="javascript:", name=name) 删除
+            if !em.system
+                tr
+                    td.label
+                        a.entity(href="javascript:", name=name)=em.label
+                    td.name=name
+                    td
+                        a.remove-entity(href="javascript:", name=name) 删除
     h2 实体视图列表
     table.simple
         each em, name in F.meta.views
-            tr
-                td.label
-                    a.view(href="javascript:", name=name)=em.label
-                td.name=name
-                td
-                    a.remove-view(href="javascript:", name=name) 删除
+            if !em.system
+                tr
+                    td.label
+                        a.view(href="javascript:", name=name)=em.label
+                    td.name=name
+                    td
+                        a.remove-view(href="javascript:", name=name) 删除

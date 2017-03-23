@@ -24,3 +24,5 @@ exports.fileDir = ''
 exports.urlPrefix = null
 
 exports.errorCatcher = null
+
+exports.fileDownloadPrefix = '/r/'
