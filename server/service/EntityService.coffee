@@ -158,6 +158,7 @@ exports.gFindManyByIds = (conn, entityMeta, ids, options)->
 exports.gList = (conn, {entityMeta, repo, criteria, pageNo, pageSize, sort, includedFields, withoutTotal})->
     pageNo = 1 unless pageNo >= 1
     sort = sort || {}
+    criteria = criteria || {}
 
     criteriaString = JSON.stringify(criteria)
     sortString = util.objectToKeyValuePairString(sort)

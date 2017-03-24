@@ -57,9 +57,7 @@ exports.gStart = ->
     koaServer.use gCatchError
 
     # jade
-    Jade = require 'koa-jade'
-    jade = new Jade({viewPath: config.serverJadePath, locals: {}, noCache: process.env.DEV == '1'})
-    koaServer.use(jade.middleware)
+    koaServer.use(require('./jade').jade.middleware)
 
     ac = require('../handler/AccessController')
     koaServer.use ac.gIdentifyUser
