@@ -10,9 +10,9 @@ exports.gGetMeta = ->
     name = @params.name
 
     if type == 'entity'
-        @body = Meta.getMetaCache().entities[name]
+        @body = Meta.getEntities()[name]
     else if type == 'view'
-        @body = Meta.getMetaCache().views[name]
+        @body = Meta.getViews()[name]
     else
         @status = 400
 

@@ -170,16 +170,10 @@ class MysqlConnection
         sql = "delete * from #{table} where _id IN #{inClause}"
         yield @pWrite(sql, sqlValues)
 
-exports.gInit = ->
+exports.init = ->
     mysqlConfig = config.mysql
     if mysqlConfig
         exports.mysql = new MysqlStore mysqlConfig
-
-        RefactorMysqlTable = require './RefactorMysqlTable'
-        yield from RefactorMysqlTable.gSyncSchema(exports.mysql)
-
-        MysqlIndex = require './MysqlIndex'
-        yield from MysqlIndex.gSyncWithMeta(exports.mysql)
 
 exports.gDispose = ->
     yield from exports.mysql.gDispose() if exports.mysql

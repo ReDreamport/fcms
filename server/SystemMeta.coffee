@@ -59,7 +59,7 @@ arrayToOption = (a)-> {name: i, label: i} for i in a
 
 SystemEntities = {
     F_EntityMeta: {
-        system: true, noPatchSystemFields: true
+        system: true,
         name: 'F_EntityMeta', label: '实体元数据'
         db: Meta.DB.none
         fields:
@@ -218,7 +218,7 @@ SystemEntities = {
                 multiple: true, inputType: "InlineComponent"
     }
     F_EntityViewMeta: {
-        system: true, noPatchSystemFields: true
+        system: true,
         name: 'F_EntityViewMeta', label: '实体视图元数据'
         fields:
             system:
@@ -670,17 +670,17 @@ SystemViews = {
     }
 }
 
-exports.patchMeta = (meta)->
-    for entityName, entityMeta of SystemEntities
-        #unless entities[entityName] # TODO 测试阶段覆盖
-        patchSystemFields(entityMeta) unless entityMeta.noPatchSystemFields
-        delete entityMeta.idType
-        meta.entities[entityName] = entityMeta
+for entityName, entityMeta of SystemEntities
+    #unless entities[entityName] # TODO 测试阶段覆盖
+    patchSystemFields(entityMeta) unless entityMeta.noPatchSystemFields
+    delete entityMeta.idType
+    entityMeta.system = true
 
-    for viewName, viewMeta of SystemViews
-        #unless entities[entityName] # TODO 测试阶段覆盖
-        patchSystemFields(viewMeta) unless viewMeta.noPatchSystemFields
-        meta.views[viewName] = viewMeta
+for viewName, viewMeta of SystemViews
+    #unless entities[entityName] # TODO 测试阶段覆盖
+    patchSystemFields(viewMeta) unless viewMeta.noPatchSystemFields
+    viewMeta.system = true
 
-    meta
+exports.SystemEntities = SystemEntities
+exports.SystemViews = SystemViews
 

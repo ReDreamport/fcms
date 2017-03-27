@@ -22,14 +22,24 @@ gStart = (appConfig, addRouteRules)->
     console.log "\n\n\n\n\n"
     log.system.info 'Starting FCMS...'
 
+    # 持久层初始化
+    Mongo.init()
+    Mysql.init()
+
     # 元数据
     Meta = require './Meta'
-    yield from Meta.gLoad(config.metaDir)
+    yield from Meta.gLoad()
 
-    # 持久层初始化
-    yield from Mongo.gInit()
+    # 初始化数据库结构、索引
+    MongoIndex = require './storage/MongoIndex'
+    yield from MongoIndex.gSyncWithMeta(Mongo.mongo)
 
-    yield from Mysql.gInit()
+    if Mysql.mysql
+        RefactorMysqlTable = require './storage/RefactorMysqlTable'
+        yield from RefactorMysqlTable.gSyncSchema(exports.mysql)
+
+        MysqlIndex = require './storage/MysqlIndex'
+        yield from MysqlIndex.gSyncWithMeta(exports.mysql)
 
     EntityServiceCache.startCleanTimer()
 

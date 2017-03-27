@@ -6,7 +6,7 @@ path = require 'path'
 util = require './util'
 log = require './log'
 
-mongo = require './storage/Mongo'
+Mongo = require './storage/Mongo'
 
 exports.DB = {mongo: 'mongodb', mysql: 'mysql', none: 'none'}
 
@@ -34,74 +34,92 @@ exports.actions = {}
 
 isDateOrTimeType = (fieldType)-> fieldType == "Date" || fieldType == "Time" || fieldType == "DateTime"
 
-metaCache = null
+entities = null
+views = null
 enhancedViewMetaCache = {}
-metaDir = null
-
-exports.getMetaCache = -> metaCache
 
 # 获取实体或视图（合并后的视图）
-exports.getEntityMeta = (name)->
-    metaCache.entities[name] || enhancedViewMetaCache[name]
+exports.getEntityMeta = (name)-> entities[name] || enhancedViewMetaCache[name]
 
 # 获取纯实体
-exports.getEntities = -> metaCache.entities
+exports.getEntities = -> entities
+
+# 获取纯视图
+exports.getViews = -> views
 
 # 前端使用的元数据
-exports.getMetaForFront = -> {entities: metaCache.entities, views: enhancedViewMetaCache}
+exports.getMetaForFront = -> {entities: entities, views: enhancedViewMetaCache}
 
-exports.gLoad = (theMetaDir)->
-    metaDir = theMetaDir
-    try
-        meta = yield util.pReadJsonFile path.join(metaDir, "meta.json")
-    catch e
-        log.system.error e, "fail to load meta"
+exports.gLoad = ()->
+    yield from gLoadMeta()
 
-    meta = meta || {entities: {}, views: {}, version: 0}
-    meta.entities = meta.entities || {}
-    meta.views = meta.views || {}
+    SystemMeta = require('./SystemMeta')
+    SystemEntities = SystemMeta.SystemEntities
+    SystemViews = SystemMeta.SystemViews
 
-    metaCache = require('./SystemMeta').patchMeta(meta)
+    entities[k] = v for k, v of SystemEntities
+    views[k] = v for k, v of SystemViews
 
     enhanceViews()
 
     log.system.info 'Meta loaded'
 
 exports.gSaveEntityMeta = (entityName, entityMeta)->
-    metaCache.entities[entityName] = entityMeta
+    entityMeta._modifiedOn = new Date()
+
+    db = yield from Mongo.mongo.gDatabase()
+    c = db.collection 'F_EntityMeta'
+    yield c.updateOne({name: entityName}, {$set: entityMeta, $inc: {_version: 1}}, {upsert: true})
+
+    entities[entityName] = entityMeta
+
     enhanceViews()
-    yield from _gPersistMeta()
 
 exports.gRemoveEntityMeta = (entityName)->
-    delete metaCache.entities[entityName]
-    yield from _gPersistMeta()
+    db = yield from Mongo.mongo.gDatabase()
+    c = db.collection 'F_EntityMeta'
+    yield c.removeOne({name: entityName})
+
+    delete entities[entityName]
 
 exports.gSaveViewMeta = (viewName, viewMeta)->
-    metaCache.views[viewName] = viewMeta
+    viewMeta._modifiedOn = new Date()
+
+    db = yield from Mongo.mongo.gDatabase()
+    c = db.collection 'F_EntityViewMeta'
+    yield c.updateOne({name: viewName}, {$set: viewMeta, $inc: {_version: 1}}, {upsert: true})
+
+    views[viewName] = viewMeta
+
     enhanceViews()
-    yield from _gPersistMeta()
 
 exports.gRemoveViewMeta = (viewName)->
-    delete metaCache.views[viewName]
+    db = yield from Mongo.mongo.gDatabase()
+    c = db.collection 'F_EntityViewMeta'
+    yield c.removeOne({name: viewName})
+
+    delete views[viewName]
     delete enhancedViewMetaCache[viewName]
-    yield from _gPersistMeta()
 
-_gPersistMeta = ->
-    try
-        oldMeta = yield util.pReadJsonFile path.join(metaDir, "meta.json")
-        yield util.pWriteJsonFile path.join(metaDir, "meta.json.#{oldMeta.version}"), oldMeta
-    catch e
-        log.system.error e, "back up old meta"
+gLoadMeta = ->
+    db = yield from Mongo.mongo.gDatabase()
+    c = db.collection 'F_EntityMeta'
+    entitiesList = yield c.find({}).toArray()
+    entities = {}
+    for e in entitiesList
+        entities[e.name] = e
 
-    metaCache.version++
-    yield util.pWriteJsonFile path.join(metaDir, "meta.json"), metaCache
+    c = db.collection 'F_EntityViewMeta'
+    viewsList = yield c.find({}).toArray()
+    views = {}
+    views[v.name] = v for v in viewsList
 
 # 补全视图的元数据
 enhanceViews = ->
     enhancedViewMetaCache = {}
 
-    for viewName, viewMeta of metaCache.views
-        backEntityMeta = metaCache.entities[viewMeta.backEntity]
+    for viewName, viewMeta of views
+        backEntityMeta = entities[viewMeta.backEntity]
         enhancedViewMeta = _.clone(backEntityMeta)
         for k, v of viewMeta
             enhancedViewMeta[k] = v if v? # 覆盖
@@ -153,9 +171,9 @@ exports.parseFieldValue = (value, fieldMeta)->
             util.longToDate value
     else if fieldMeta.type == "ObjectId"
         if _.isArray value
-            mongo.stringToObjectIdSilently(i) for i in value # null 值不去
+            Mongo.stringToObjectIdSilently(i) for i in value # null 值不去
         else
-            mongo.stringToObjectIdSilently value
+            Mongo.stringToObjectIdSilently value
     else if fieldMeta.type == "Reference"
         refEntityMeta = exports.getEntityMeta fieldMeta.refEntity
         throw new Error "No ref entity [#{fieldMeta.refEntity}]. Field #{fieldMeta.name}" unless refEntityMeta?

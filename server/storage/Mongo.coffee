@@ -36,11 +36,9 @@ class MongoStore
         catch e
             log.system.error e, "dispose mongodb [#{@name}]"
 
-exports.gInit = ->
+exports.init = ->
     throw new Error 'Mongo config is required now' unless config.mongo?.url
     exports.mongo = new MongoStore 'main', config.mongo.url
-    MongoIndex = require './MongoIndex'
-    yield from MongoIndex.gSyncWithMeta(exports.mongo)
 
 exports.gDispose = ->
     yield from exports.mongo.gDispose() if exports.mongo

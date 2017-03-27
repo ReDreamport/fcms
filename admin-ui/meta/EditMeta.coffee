@@ -41,6 +41,7 @@ editEntityOrView = (editedEntityName, objectName, objectLabel, metaName, funcNam
                 q = F.api.put "meta/#{objectName}/#{editedEntityMeta.name}", editedEntityMeta
                 q.then ->
                     F.removePage(pageId)
+                    $('.view.view-meta-index .refresh-list').click()
                 q.catch (xhr)->
                     saving = false
                     $saveBtn.html '保存'
