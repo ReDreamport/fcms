@@ -63,7 +63,8 @@ F.formatDate = (v, format) ->
     d.format(format)
 
 F.dateStringToInt = (val, format)->
-    return undefined if F.trim(val)
+    val = F.trim val
+    return undefined unless val
     moment(val, format).valueOf()
 
 F.equalOrContainInArray = (target, valueOrArray)->

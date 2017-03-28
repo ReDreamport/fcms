@@ -69,6 +69,7 @@ exports.gSaveEntityMeta = (entityName, entityMeta)->
 
     db = yield from Mongo.mongo.gDatabase()
     c = db.collection 'F_EntityMeta'
+    delete entityMeta._version
     yield c.updateOne({name: entityName}, {$set: entityMeta, $inc: {_version: 1}}, {upsert: true})
 
     entities[entityName] = entityMeta

@@ -102,7 +102,7 @@ F.tdStyleOfField = (fm)->
         when "Int", "Float"
             {width: '80px', 'text-align': 'right'}
         when "Date", "Time", "DateTime"
-            {width: '180px', 'text-align': 'center'}
+            {width: '160px', 'text-align': 'center'}
         when "Image", "File"
             {width: '90px', 'text-align': 'center'}
         else

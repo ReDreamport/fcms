@@ -124,3 +124,8 @@ exports.setGeneratorTimeout = (timeout, run)->
 exports.setGeneratorInterval = (timeout, run)->
     run2 = -> co(run).catch (e)-> log.system.error e
     setInterval(run2, timeout)
+
+exports.entityListToIdMap = (list)->
+    map = {}
+    map[i._id] = i for i in list
+    map

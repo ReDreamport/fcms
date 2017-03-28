@@ -33,7 +33,7 @@ mixin renderFieldValue(fieldMeta, entityValue, renderComponentCompletely)
             when 'Time'
                 | #{F.formatDate(entityValue[fn], "HH:mm")}
             when 'DateTime'
-                | #{F.formatDate(entityValue[fn], "YY-MM-DD HH:mm:ss.SSS")}
+                | #{F.formatDate(entityValue[fn], "YY-MM-DD HH:mm:ss")}
             when 'Boolean'
                 if entityValue[fn] === true
                     i.iconfont.icon-correct
