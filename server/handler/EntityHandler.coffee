@@ -49,6 +49,8 @@ exports.gUpdateEntityById = ->
 
     instance = @request.body
     _version = instance._version
+    delete instance._createdBy
+    delete instance._createdOn
     instance = Meta.parseEntity(instance, entityMeta)
     # TODO 按权限字段过滤
 
@@ -73,6 +75,8 @@ exports.gUpdateEntityInBatch = ->
     delete patch.idVersions
     iv.id = Meta.parseId(iv.id, entityMeta) for iv in idVersions
 
+    delete patch._createdBy
+    delete patch._createdOn
     patch = Meta.parseEntity(patch, entityMeta)
     # TODO 按权限字段过滤
 
