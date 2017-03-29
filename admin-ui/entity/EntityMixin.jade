@@ -66,4 +66,4 @@ mixin renderFieldValue(fieldMeta, entityValue, renderComponentCompletely)
                     each id in fv
                         a.to-view-entity.loading-ref(href="javascript:", _id=id, entityName=fieldMeta.refEntity)=F.digestId(id)
             default
-                | #{entityValue[fn]}
+                div!=entityValue[fn]

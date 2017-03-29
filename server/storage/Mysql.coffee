@@ -170,6 +170,15 @@ class MysqlConnection
         sql = "delete * from #{table} where _id IN #{inClause}"
         yield @pWrite(sql, sqlValues)
 
+    gDeleteManyByCriteria: (table, criteria)->
+        return unless ids?.length
+
+        sqlValues = []
+        where = criteriaToWhereClause(criteria, sqlValues)
+
+        sql = "delete * from #{table} where #{where}"
+        yield @pWrite(sql, sqlValues)
+
 exports.init = ->
     mysqlConfig = config.mysql
     if mysqlConfig

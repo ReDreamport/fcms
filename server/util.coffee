@@ -129,3 +129,5 @@ exports.entityListToIdMap = (list)->
     map = {}
     map[i._id] = i for i in list
     map
+
+exports.objectIdsEquals = (a, b)-> a?.toString() == b?.toString()

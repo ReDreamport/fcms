@@ -4,9 +4,15 @@ fetchMenu = ->
     q.catch -> q = null
     q.then (r)-> r.page?[0]
 
-F.initMenu = ->
-    hasPermission = F.hasPermission
+canAccessMenu = (target)->
+    user = F.user
+    return true if user.acl.menu?[target]
+    if user.roles
+        for rn, role of user.roles
+            return true if role.acl.menu?[target]
+    false
 
+F.initMenu = ->
     fetchMenu().then (menuData)->
         F.menuData = menuData
         menuGroupsShown = []
@@ -20,12 +26,9 @@ F.initMenu = ->
                     if F.user.admin
                         menuItemsShown.push(menuItem)
                     else if menuItem.callFunc
-                        menuItemsShown.push(menuItem) if hasPermission('menuPermissions', menuItem.callFunc)
+                        menuItemsShown.push(menuItem) if canAccessMenu(menuItem.callFunc)
                     else if menuItem.toEntity
-                        canListEntity = (hasPermission('entityPermissions', '*/' + menuItem.toEntity) or
-                            hasPermission('entityPermissions', 'ListEntity/' + menuItem.toEntity))
-                        if canListEntity and hasPermission('urlPermissions', 'ListEntity')
-                            menuItemsShown.push(menuItem)
+                        menuItemsShown.push(menuItem) if canAccessMenu(menuItem.toEntity)
                 if menuItemsShown.length
                     menuGroup2 = F.cloneByJSON(menuGroup)
                     menuGroup2.menuItems = menuItemsShown

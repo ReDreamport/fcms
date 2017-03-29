@@ -36,7 +36,7 @@
                 input.check-all(type="checkbox")
                 | 全选/全不选
         -var actionsChecked = aclValue.action || []
-        each action, label in actions
+        each label, action in actions
             label
                 input.right(type="checkbox", value=action, checked=($.inArray(action, actionsChecked) >= 0))
                 | #{label}

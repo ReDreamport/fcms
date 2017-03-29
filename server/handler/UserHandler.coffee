@@ -76,10 +76,10 @@ exports.gResetPassword = ->
         throw new errors.UserError('BadPasswordFormat')
 
     if req.phone?
-        SecurityCodeServices.check(req.phone, req.securityCode)
+        SecurityCodeService.check(req.phone, req.securityCode)
         yield from UserService.gResetPasswordByPhone(req.phone, req.password)
     else if req.email?
-        SecurityCodeServices.check(req.email, req.securityCode)
+        SecurityCodeService.check(req.email, req.securityCode)
         yield from UserService.gResetPasswordByEmail(req.email, req.password)
     else
         @status = 400

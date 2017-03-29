@@ -59,15 +59,11 @@ exports.gUpdateOneByCriteria = (entityMeta, criteria, instance)->
         {code, message} = _toDupKeyError(e, entityMeta)
         throw new error.UniqueConflictError(code, message)
 
-exports.gUpdateByIdVersion = (entityMeta, _id, _version, instance)->
-    instance._version = _version
-    yield from exports.gUpdateOneByCriteria entityMeta, {__type: 'simple', _id, _version}, instance
-
-exports.gRemoveMany = (entityMeta, ids)->
+exports.gRemoveManyByCriteria = (entityMeta, criteria)->
     if entityMeta.removeMode == 'toTrash'
-        yield from _gRemoveManyToTrash(entityMeta, ids)
+        yield from _gRemoveManyToTrash(entityMeta, criteria)
     else
-        yield from _gRemoveManyCompletely(entityMeta, ids)
+        yield from _gRemoveManyCompletely(entityMeta, criteria)
 
 ###
 软删除有几种方式：放在单独的表中，放在原来的表中+使用标记字段。
@@ -75,26 +71,26 @@ exports.gRemoveMany = (entityMeta, ids)->
 好在目前采用ObjectId的方式不会导致该问题。
 放在原表加标记字段的方式，使得所有的查询都要记得查询删除标记为false的实体，并影响索引的构建，麻烦
 ###
-_gRemoveManyToTrash = (entityMeta, ids) ->
+_gRemoveManyToTrash = (entityMeta, criteria) ->
     trashTable = Meta.getCollectionName(entityMeta, "trash")
 
     db = yield from Mongo.mongo.gDatabase()
     formalCollection = db.collection entityMeta.tableName
     trashCollection = db.collection trashTable
 
-    list = yield formalCollection.find({_id: {$in: ids}}).toArray()
+    list = yield formalCollection.find(criteria).toArray()
     for entity in list
         entity._modifiedOn = new Date()
         entity._version++
 
     yield trashCollection.insertMany(list)
 
-    yield formalCollection.deleteMany({_id: {$in: ids}})
+    yield formalCollection.deleteMany(criteria)
 
-_gRemoveManyCompletely = (entityMeta, ids) ->
+_gRemoveManyCompletely = (entityMeta, criteria) ->
     db = yield from Mongo.mongo.gDatabase()
     c = db.collection entityMeta.tableName
-    yield c.deleteMany {_id: {$in: ids}}
+    yield c.deleteMany criteria
 
 exports.gRecoverMany = (entityMeta, ids)->
     trashTable = Meta.getCollectionName(entityMeta, "trash")

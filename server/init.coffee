@@ -7,23 +7,21 @@ exports.gInit = ->
     yield from gAddDefaultMenu()
 
 gCreateAdminUser = ->
-    userMeta = Meta.getEntityMeta('F_User')
-    hasAdmin = yield from EntityService.gFindOneByCriteria(null, userMeta, {admin: true})
+    hasAdmin = yield from EntityService.gFindOneByCriteria(null, 'F_User', {admin: true})
     return if hasAdmin
 
     log.system.info 'Create default admin user'
-    yield from EntityService.gCreate(null, userMeta, {
+    yield from EntityService.gCreate(null, 'F_User', {
         _id: Meta.newObjectId().toString(), admin: true
         username: 'admin', password: Meta.hashPassword('admin'),
     })
 
 gAddDefaultMenu = ->
-    menuMeta = Meta.getEntityMeta('F_Menu')
-    hasMenu = yield from EntityService.gFindOneByCriteria(null, menuMeta, {})
+    hasMenu = yield from EntityService.gFindOneByCriteria(null, 'F_Menu', {})
     return if hasMenu
 
     log.system.info 'Create default menu'
-    yield from EntityService.gCreate(null, menuMeta, defaultMenu)
+    yield from EntityService.gCreate(null, 'F_Menu', defaultMenu)
 
 defaultMenu = {
     "_version": 1,

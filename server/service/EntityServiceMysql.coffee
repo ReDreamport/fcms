@@ -43,16 +43,12 @@ exports.gUpdateOneByCriteria = (conn, entityMeta, criteria, instance)->
         {code, message} = _toDupKeyError(e, entityMeta)
         throw new error.UniqueConflictError(code, message)
 
-exports.gUpdateByIdVersion = (conn, entityMeta, _id, _version, instance)->
-    instance._version = _version
-    yield from exports.gUpdateOneByCriteria conn, entityMeta, {__type: 'simple', _id, _version}, instance
-
-exports.gRemoveMany = (conn, entityMeta, ids)->
+exports.gRemoveManyByCriteria = (conn, entityMeta, criteria)->
     return unless ids?.length
     if entityMeta.removeMode == 'toTrash'
-        yield from _gRemoveManyToTrash(conn, entityMeta, ids)
+        yield from _gRemoveManyToTrash(conn, entityMeta, criteria)
     else
-        yield from _gRemoveManyCompletely(conn, entityMeta, ids)
+        yield from _gRemoveManyCompletely(conn, entityMeta, criteria)
 
 exports.gRecoverMany = (conn, entityMeta, ids)->
     return unless ids?.length
@@ -66,11 +62,12 @@ exports.gRecoverMany = (conn, entityMeta, ids)->
     yield from conn.gInsertMany entityMeta.tableName, list # TODO 主键重复？
     yield from conn.gDeleteManyByIds trashTable, ids
 
-_gRemoveManyToTrash = (conn, entityMeta, ids) ->
+_gRemoveManyToTrash = (conn, entityMeta, criteria) ->
     return unless ids?.length
     trashTable = Meta.getCollectionName(entityMeta, "trash")
 
-    list = yield from conn.gListByIds entityMeta.tableName, ids
+    list = yield from conn.gFind {table: entityMeta.tableName, criteria, pageSize: -1, paging: false}
+
     for entity in list
         entity._modifiedOn = new Date()
         entity._version++
@@ -78,11 +75,11 @@ _gRemoveManyToTrash = (conn, entityMeta, ids) ->
     if list?.length
         yield from conn.gInsertMany trashTable, list # TODO 主键重复？
 
-    yield from conn.gDeleteManyByIds entityMeta.tableName, ids
+    yield from conn.gDeleteManyByCriteria entityMeta.tableName, criteria
 
-_gRemoveManyCompletely = (conn, entityMeta, ids) ->
+_gRemoveManyCompletely = (conn, entityMeta, criteria) ->
     return unless ids?.length
-    yield from conn.gDeleteManyByIds entityMeta.tableName, ids
+    yield from conn.gDeleteManyByCriteria entityMeta.tableName, criteria
 
 exports.gFindOneByCriteria = (conn, entityMeta, criteria, o)->
     table = Meta.getCollectionName entityMeta, o?.repo

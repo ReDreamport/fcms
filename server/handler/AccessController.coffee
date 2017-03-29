@@ -57,13 +57,13 @@ gCheckAll = (httpCtx)->
 gCheckUserHasAction = (user, action)->
     return false unless user?
 
-    return true if user.acl?.action?.has action
+    return true if user.acl?.action?[action]
 
     roles = user.roles
     if roles
         for roleId in roles
             role = yield from UserService.gRoleById roleId
-            return true if role?.acl?.action?.as action
+            return true if role?.acl?.action?[action]
 
     false
 
@@ -86,7 +86,7 @@ authHandlers =
 gCheckUserHasEntityAction = (user, action, entityName)->
     if user?
         entityAcl = user.acl?.entity?[entityName]
-        return true if '*' in entityAcl || action in entityAcl
+        return true if entityAcl and (entityAcl['*'] || entityAcl[action])
 
         roles = user.roles
         if roles
@@ -94,10 +94,10 @@ gCheckUserHasEntityAction = (user, action, entityName)->
                 role = yield from UserService.gRoleById roleId
                 if role
                     entityAcl = role.acl?.entity?[entityName]
-                    return true if '*' in entityAcl || action in entityAcl
+                    return true if entityAcl and (entityAcl['*'] || entityAcl[action])
     else
         role = yield from UserService.gGetAnonymousRole()
         if role
             entityAcl = role.acl?.entity?[entityName]
-            return true if '*' in entityAcl || action in entityAcl
+            return true if entityAcl and (entityAcl['*'] || entityAcl[action])
     false

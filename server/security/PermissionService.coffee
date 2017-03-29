@@ -1,9 +1,19 @@
 # 菜单权限、按钮权限、端点权限、实体权限（增删改查）、字段权限（读、填、改）
 
-exports.permissionArrayToSet = (acl)->
+util = require '../util'
+
+exports.permissionArrayToMap = (acl)->
     return acl unless acl?
-    acl.menu = new Set(acl.menu) if acl.menu
-    acl.button = new Set(acl.button) if acl.button
-    acl.action = new Set(acl.action) if acl.action
-    acl.entity = new Set(acl.entity) if acl.entity
-    acl.field = new Set(acl.field) if acl.field
+    acl.menu = util.arrayToTrueObject(acl.menu)
+    acl.button = util.arrayToTrueObject(acl.button)
+    acl.action = util.arrayToTrueObject(acl.action)
+
+    if acl.entity
+        entities = acl.entity
+        entities[entityName] = util.arrayToTrueObject(v) for entityName, v of entities
+
+    if acl.field
+        entities = acl.field
+        for entityName, e of entities
+            for fieldName, field of e
+                e[fieldName] = util.arrayToTrueObject(field) if field

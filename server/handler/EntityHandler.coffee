@@ -6,10 +6,9 @@ Meta = require '../Meta'
 log = require '../log'
 
 EntityService = require '../service/EntityService'
+Interceptor = require './EntityInterceptor'
 
 Mysql = require '../storage/Mysql'
-
-EntityInputBridge = require './EntityInputBridge'
 
 exports.gCreateEntity = ->
     entityName = @params.entityName
@@ -31,10 +30,13 @@ exports.gCreateEntity = ->
 
     instance._createdBy = @state.user?._id
 
-    entityMeta = yield from EntityInputBridge.gCreate(entityMeta, instance)
+    gIntercept = Interceptor.getInterceptor entityName, Interceptor.Actions.Create
+    operator = @state.user
 
     r = yield from EntityService.gWithTransaction entityMeta, (conn)->
-        yield from EntityService.gCreate(conn, entityMeta, instance)
+        yield from gIntercept conn, instance, operator, ->
+            yield from EntityService.gCreate(conn, entityName, instance)
+
     @body = {id: r._id}
 
 exports.gUpdateEntityById = ->
@@ -44,22 +46,25 @@ exports.gUpdateEntityById = ->
     throw new error.UserError('NoSuchEntity') unless entityMeta
     throw new error.UserError('EditNotAllow') if entityMeta.noEdit
 
-    id = Meta.parseId(@params.id, entityMeta)
-    return @status = 404 unless id?
+    _id = Meta.parseId(@params.id, entityMeta)
+    return @status = 404 unless _id?
 
     instance = @request.body
-    _version = instance._version
-    delete instance._createdBy
-    delete instance._createdOn
+
+    criteria = {_id, _version: instance._version}
+
     instance = Meta.parseEntity(instance, entityMeta)
     # TODO 按权限字段过滤
 
     instance._modifiedBy = @state.user?._id
 
-    entityMeta = yield from EntityInputBridge.gUpdate(entityMeta, instance, id)
+    gIntercept = Interceptor.getInterceptor entityName, Interceptor.Actions.Update
+    operator = @state.user
 
     yield from EntityService.gWithTransaction entityMeta, (conn)->
-        yield from EntityService.gUpdateByIdVersion(conn, entityMeta, id, _version, instance)
+        yield from gIntercept conn, criteria, instance, operator, ->
+            yield from EntityService.gUpdateOneByCriteria(conn, entityName, criteria, instance)
+
     @status = 204
 
 exports.gUpdateEntityInBatch = ->
@@ -70,23 +75,26 @@ exports.gUpdateEntityInBatch = ->
     throw new error.UserError('EditNotAllow') if entityMeta.noEdit
 
     patch = @request.body
+
     idVersions = patch.idVersions
     throw new error.UserError('EmptyOperation') unless idVersions.length > 0
     delete patch.idVersions
     iv.id = Meta.parseId(iv.id, entityMeta) for iv in idVersions
 
-    delete patch._createdBy
-    delete patch._createdOn
     patch = Meta.parseEntity(patch, entityMeta)
     # TODO 按权限字段过滤
 
     patch._modifiedBy = @state.user?._id
 
-    entityMeta = yield from EntityInputBridge.gUpdateInBatch(entityMeta, patch, idVersions)
+    gIntercept = Interceptor.getInterceptor entityName, Interceptor.Actions.Update
+    operator = @state.user
 
     yield from EntityService.gWithTransaction entityMeta, (conn)->
         for p in idVersions
-            yield from EntityService.gUpdateByIdVersion(conn, entityMeta, p.id, p._version, patch)
+            criteria = {_id: p.id, _version: p._version}
+            yield from gIntercept conn, criteria, patch, operator, ->
+                yield from EntityService.gUpdateOneByCriteria(conn, entityName, criteria, patch)
+
     @status = 204
 
 exports.gDeleteEntityInBatch = ->
@@ -103,10 +111,14 @@ exports.gDeleteEntityInBatch = ->
     ids = Meta.parseIds(ids, entityMeta)
     throw new error.UserError('EmptyOperation') unless ids.length > 0
 
-    entityMeta = yield from EntityInputBridge.gDeleteInBatch(entityMeta, ids)
+    criteria = {__type: 'relation', relation: 'and', items: [{field: '_id', operator: 'in', value: ids}]}
+
+    gIntercept = Interceptor.getInterceptor entityName, Interceptor.Actions.Remove
+    operator = @state.user
 
     yield from EntityService.gWithTransaction entityMeta, (conn)->
-        yield from EntityService.gRemoveMany(conn, entityMeta, ids)
+        yield from gIntercept conn, criteria, operator, ->
+            yield from EntityService.gRemoveManyByCriteria(conn, entityName, criteria)
     @status = 204
 
 exports.gRecoverInBatch = ->
@@ -121,10 +133,8 @@ exports.gRecoverInBatch = ->
     ids = Meta.parseIds(ids, entityMeta)
     throw new error.UserError('EmptyOperation') unless ids.length > 0
 
-    entityMeta = yield from EntityInputBridge.gRecoverInBatch(entityMeta, ids)
-
     yield from EntityService.gWithTransaction entityMeta, (conn)->
-        yield from EntityService.gRecoverMany(conn, entityMeta, ids)
+        yield from EntityService.gRecoverMany(conn, entityName, ids)
     @status = 204
 
 exports.gFindOneById = ->
@@ -133,14 +143,17 @@ exports.gFindOneById = ->
 
     throw new error.UserError('NoSuchEntity') unless entityMeta
 
-    entityId = Meta.parseId @params.id, entityMeta
-    return @status = 404 unless entityId?
+    _id = Meta.parseId @params.id, entityMeta
+    return @status = 404 unless _id?
 
-    backEntityMeta = Meta.getEntityMeta(entityMeta.backEntity) || entityMeta
-    entity = yield from EntityService.gWithoutTransaction backEntityMeta, (conn)->
-        yield from EntityService.gFindOneById(conn, backEntityMeta, entityId, {repo: @query?._repo})
+    gIntercept = Interceptor.getInterceptor entityName, Interceptor.Actions.Get
+    operator = @state.user
 
-    yield from EntityInputBridge.gAfterFindOne(entityMeta, entity, @state.user?._id)
+    criteria = {_id}
+
+    entity = yield from EntityService.gWithoutTransaction entityMeta, (conn)->
+        yield from gIntercept conn, criteria, operator, ->
+            yield from EntityService.gFindOneByCriteria(conn, entityName, criteria, {repo: @query?._repo})
 
     # TODO 按权限字段过滤
 
@@ -158,13 +171,12 @@ exports.gList = ->
 
     query = exports.parseListQuery(entityMeta, @query)
 
-    backEntityMeta = Meta.getEntityMeta(entityMeta.backEntity) || entityMeta
-    query.entityMeta = backEntityMeta
-
-    yield from EntityInputBridge.gModifyListQuery(entityMeta, query, @state.user?._id)
+    gIntercept = Interceptor.getInterceptor entityName, Interceptor.Actions.List
+    operator = @state.user
 
     r = yield from EntityService.gWithoutTransaction entityMeta, (conn)->
-        yield from EntityService.gList conn, query
+        yield from gIntercept conn, query, operator, ->
+            yield from EntityService.gList conn, entityName, query
 
     # TODO 过滤 notInListAPI 的字段
     # TODO 权限字段过滤
@@ -244,23 +256,23 @@ exports.parseListQuery = (entityMeta, query)->
     {repo: query._repo, criteria, includedFields, sort, pageNo, pageSize}
 
 exports.gSaveFilters = ->
+    entityMeta = Meta.getEntityMeta('F_ListFilters')
+
     req = @request.body
     return @status = 400 unless req
 
-    update = {
-        name: req.name, entityName: req.entityName,
-        criteria: req.criteria, sortBy: req.sortBy, sortOrder: req.sortOrder
-    }
+    instance = Meta.parseEntity(req, entityMeta)
 
-    entityMeta = Meta.getEntityMeta('F_ListFilters')
-
-    criteria = {name: req.name, entityName: req.entityName}
+    criteria = {name: instance.name, entityName: instance.entityName}
     includedFields = ['_id', '_version']
-    filters = yield from EntityService.gFindOneByCriteria(null, entityMeta, criteria, {includedFields})
-    if filters
-        yield from EntityService.gUpdateByIdVersion(null, entityMeta, filters._id, filters._version, update)
+
+    lf = yield from EntityService.gFindOneByCriteria({}, 'F_ListFilters', criteria, {includedFields})
+    if lf
+        yield from EntityService.gUpdateOneByCriteria({}, 'F_ListFilters', {
+            _id: lf._id, _version: lf._version
+        }, instance)
     else
-        yield from EntityService.gCreate(null, filters, update)
+        yield from EntityService.gCreate({}, 'F_ListFilters', instance)
 
     @status = 204
 
@@ -268,9 +280,7 @@ exports.gRemoveFilters = ->
     query = @query
     return @status = 400 unless query and query.name and query.entityName
 
-    entityMeta = Meta.getEntityMeta('F_ListFilters')
-
-    yield from EntityService.gRemoveManyByCriteria(null, entityMeta, {
+    yield from EntityService.gRemoveManyByCriteria({}, 'F_ListFilters', {
         name: query.name, entityName: query.entityName
     })
 

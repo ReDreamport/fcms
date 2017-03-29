@@ -7,124 +7,95 @@ Meta = require '../Meta'
 MongoService = require './EntityServiceMongo'
 MysqlService = require './EntityServiceMysql'
 EntityCache = require './EntityServiceCache'
-Interceptor = require './EntityServiceInterceptor'
 
 Mysql = require '../storage/Mysql'
 
-exports.gCreate = (conn, entityMeta, instance)->
+exports.gCreate = (conn, entityName, instance)->
+    entityMeta = Meta.getEntityMeta(entityName)
+
     throw new error.UserError("CreateEmpty") unless _.size(instance)
 
     instance._version = 1
     instance._createdOn = new Date()
     instance._modifiedOn = instance._createdOn
 
-    gIntercept = Interceptor.getInterceptor entityMeta.name, Interceptor.Actions.Create
     try
-        yield from gIntercept conn, instance, ->
-            id = if entityMeta.db == Meta.DB.mysql
-                yield from MysqlService.gCreate conn, entityMeta, instance
-            else if entityMeta.db == Meta.DB.mongo
-                yield from MongoService.gCreate entityMeta, instance
+        id = if entityMeta.db == Meta.DB.mysql
+            yield from MysqlService.gCreate conn, entityMeta, instance
+        else if entityMeta.db == Meta.DB.mongo
+            yield from MongoService.gCreate entityMeta, instance
 
-            instance._id = id
-            return {_id: id}
+        instance._id = id
+        return {_id: id}
     finally
         yield from EntityCache.gFireEntityCreated(conn, entityMeta) # 很可能实体还是被某种程度修改，导致缓存失效
 
-exports.gUpdateManyByCriteria = (conn, entityMeta, criteria, instance)->
-    delete instance._version
+exports.gUpdateOneByCriteria = (conn, entityName, criteria, instance)->
+    entityMeta = Meta.getEntityMeta(entityName)
+
     delete instance._id
+    delete instance._version
+    delete instance._createdBy
+    delete instance._createdOn
+
     return unless _.size(instance)
 
     instance._modifiedOn = new Date()
 
-    gIntercept = Interceptor.getInterceptor entityMeta.name, Interceptor.Actions.Update
     try
-        yield from gIntercept conn, criteria, instance, ->
-            if entityMeta.db == Meta.DB.mysql
-                yield from MysqlService.gUpdateManyByCriteria conn, entityMeta, criteria, instance
-            else if entityMeta.db == Meta.DB.mongo
-                yield from MongoService.gUpdateManyByCriteria entityMeta, criteria, instance
+        if entityMeta.db == Meta.DB.mysql
+            yield from MysqlService.gUpdateOneByCriteria conn, entityMeta, criteria, instance
+        else if entityMeta.db == Meta.DB.mongo
+            yield from MongoService.gUpdateOneByCriteria entityMeta, criteria, instance
     finally
-        yield from EntityCache.gFireEntityUpdated(conn, entityMeta, null) # 清空全部缓存
+        yield from EntityCache.gFireEntityUpdated(conn, entityMeta, null) # TODO 清除效率改进
 
-exports.gUpdateOneByCriteria = (conn, entityMeta, criteria, instance)->
-    delete instance._version
+exports.gUpdateManyByCriteria = (conn, entityName, criteria, instance)->
+    entityMeta = Meta.getEntityMeta(entityName)
+
     delete instance._id
+    delete instance._version
+    delete instance._createdBy
+    delete instance._createdOn
+
     return unless _.size(instance)
 
     instance._modifiedOn = new Date()
 
-    gIntercept = Interceptor.getInterceptor entityMeta.name, Interceptor.Actions.Update
     try
-        yield from gIntercept conn, criteria, instance, ->
-            if entityMeta.db == Meta.DB.mysql
-                yield from MysqlService.gUpdateOneByCriteria conn, entityMeta, criteria, instance
-            else if entityMeta.db == Meta.DB.mongo
-                yield from MongoService.gUpdateOneByCriteria entityMeta, criteria, instance
+        if entityMeta.db == Meta.DB.mysql
+            yield from MysqlService.gUpdateManyByCriteria conn, entityMeta, criteria, instance
+        else if entityMeta.db == Meta.DB.mongo
+            yield from MongoService.gUpdateManyByCriteria entityMeta, criteria, instance
     finally
-        yield from EntityCache.gFireEntityUpdated(conn, entityMeta, null) # 清空全部缓存 TODO 更新一个，可以先根据条件查ID
+        yield from EntityCache.gFireEntityUpdated(conn, entityMeta, null) # TODO 清除效率改进
 
-exports.gUpdateByIdVersion = (conn, entityMeta, _id, _version, instance)->
-    delete instance._version
-    delete instance._id
-    return unless _.size(instance)
+exports.gRemoveManyByCriteria = (conn, entityName, criteria)->
+    entityMeta = Meta.getEntityMeta(entityName)
 
-    instance._modifiedOn = new Date()
-
-    gIntercept = Interceptor.getInterceptor entityMeta.name, Interceptor.Actions.Update
     try
-        yield from gIntercept conn, {_id, _version}, instance, ->
-            if entityMeta.db == Meta.DB.mysql
-                yield from MysqlService.gUpdateByIdVersion conn, entityMeta, _id, _version, instance
-            else if entityMeta.db == Meta.DB.mongo
-                yield from MongoService.gUpdateByIdVersion entityMeta, _id, _version, instance
+        if entityMeta.db == Meta.DB.mysql
+            yield from MysqlService.gRemoveManyByCriteria conn, entityMeta, criteria
+        else if entityMeta.db == Meta.DB.mongo
+            yield from MongoService.gRemoveManyByCriteria entityMeta, criteria
+        true
     finally
-        yield from EntityCache.gFireEntityUpdated(conn, entityMeta, [_id])
+        yield from EntityCache.gFireEntityRemoved(conn, entityMeta, null) # TODO 清除效率改进
 
-exports.gRemoveMany = (conn, entityMeta, ids)->
-    return unless ids?.length
+exports.gRecoverMany = (conn, entityName, ids)->
+    entityMeta = Meta.getEntityMeta(entityName)
 
-    gIntercept = Interceptor.getInterceptor entityMeta.name, Interceptor.Actions.Remove
     try
-        yield from gIntercept conn, ids, ->
-            if entityMeta.db == Meta.DB.mysql
-                yield from MysqlService.gRemoveMany conn, entityMeta, ids
-            else if entityMeta.db == Meta.DB.mongo
-                yield from MongoService.gRemoveMany entityMeta, ids
-            true
-    finally
-        yield from EntityCache.gFireEntityRemoved(conn, entityMeta, ids)
-
-exports.gRemoveManyByCriteria = (conn, entityMeta, criteria)->
-    entities = yield from exports.gFindManyByCriteria(conn, {entityMeta, criteria, includedFields: ["_id"]})
-    ids = (e._id for e in entities)
-    return unless ids.length
-
-    gIntercept = Interceptor.getInterceptor entityMeta.name, Interceptor.Actions.Remove
-    try
-        yield from gIntercept conn, ids, ->
-            if entityMeta.db == Meta.DB.mysql
-                yield from MysqlService.gRemoveMany conn, entityMeta, ids
-            else if entityMeta.db == Meta.DB.mongo
-                yield from MongoService.gRemoveMany entityMeta, ids
-            true
-    finally
-        yield from EntityCache.gFireEntityRemoved(conn, entityMeta, ids)
-
-exports.gRecoverMany = (conn, entityMeta, ids)->
-    gIntercept = Interceptor.getInterceptor entityMeta.name, Interceptor.Actions.Recover
-    try
-        yield from gIntercept conn, ids, ->
-            if entityMeta.db == Meta.DB.mysql
-                yield from MysqlService.gRecoverMany conn, entityMeta, ids
-            else if entityMeta.db == Meta.DB.mongo
-                yield from MongoService.gRecoverMany entityMeta, ids
-            true
+        if entityMeta.db == Meta.DB.mysql
+            yield from MysqlService.gRecoverMany conn, entityMeta, ids
+        else if entityMeta.db == Meta.DB.mongo
+            yield from MongoService.gRecoverMany entityMeta, ids
     finally
         yield from EntityCache.gFireEntityCreated(conn, entityMeta)
 
-exports.gFindOneById = (conn, entityMeta, id, options)->
+exports.gFindOneById = (conn, entityName, id, options)->
+    entityMeta = Meta.getEntityMeta(entityName)
+
     cacheId = id + "|" + options?.repo + "|" + options?.includedFields?.join(",")
     criteria = {_id: id}
 
@@ -134,7 +105,9 @@ exports.gFindOneById = (conn, entityMeta, id, options)->
         else if entityMeta.db == Meta.DB.mongo
             yield from MongoService.gFindOneByCriteria entityMeta, criteria, options
 
-exports.gFindOneByCriteria = (conn, entityMeta, criteria, options)->
+exports.gFindOneByCriteria = (conn, entityName, criteria, options)->
+    entityMeta = Meta.getEntityMeta(entityName)
+
     cacheId = "OneByCriteria|" + options?.repo + "|" + JSON.stringify(criteria) + "|" + options?.includedFields?.join(",")
 
     yield from EntityCache.gWithOtherCache entityMeta, cacheId, ->
@@ -143,19 +116,9 @@ exports.gFindOneByCriteria = (conn, entityMeta, criteria, options)->
         else if entityMeta.db == Meta.DB.mongo
             yield from MongoService.gFindOneByCriteria entityMeta, criteria, options
 
-exports.gFindManyByIds = (conn, entityMeta, ids, options)->
-    cacheId = "ManyById|" + options?.repo + "|" + _.join(ids, ";") + "|" + options?.includedFields?.join(",")
-    criteria = {__type: 'relation', field: '_id', operator: 'in', value: ids}
+exports.gList = (conn, entityName, {repo, criteria, pageNo, pageSize, sort, includedFields, withoutTotal})->
+    entityMeta = Meta.getEntityMeta(entityName)
 
-    yield from EntityCache.gWithOtherCache entityMeta, cacheId, ->
-        cr = {repo: options?.repo, entityMeta, criteria, includedFields: options?.includedFields}
-
-        if entityMeta.db == Meta.DB.mysql
-            yield from MysqlService.gFindManyByCriteria conn, cr
-        else if entityMeta.db == Meta.DB.mongo
-            yield from MongoService.gFindManyByCriteria cr
-
-exports.gList = (conn, {entityMeta, repo, criteria, pageNo, pageSize, sort, includedFields, withoutTotal})->
     pageNo = 1 unless pageNo >= 1
     sort = sort || {}
     criteria = criteria || {}
@@ -167,18 +130,26 @@ exports.gList = (conn, {entityMeta, repo, criteria, pageNo, pageSize, sort, incl
     cacheId = "List|#{repo}|#{pageNo}|#{pageSize}|#{criteriaString}|#{sortString}|#{includedFieldsString}"
 
     yield from EntityCache.gWithOtherCache entityMeta, cacheId, ->
-        cr = {repo, entityMeta, criteria, includedFields, sort, pageNo, pageSize, withoutTotal}
+        query = {repo, entityMeta, criteria, includedFields, sort, pageNo, pageSize, withoutTotal}
         if entityMeta.db == Meta.DB.mysql
-            yield from MysqlService.gList conn, cr
+            yield from MysqlService.gList conn, query
         else if entityMeta.db == Meta.DB.mongo
-            yield from MongoService.gList cr
+            yield from MongoService.gList query
 
-exports.gFindManyByCriteria = (conn, options)->
+exports.gFindManyByCriteria = (conn, entityName, options)->
+    options = options || {}
     options.pageSize = -1
     options.withoutTotal = true
-    delete options.sort
 
-    yield from exports.gList(conn, options)
+    yield from exports.gList(conn, entityName, options)
+
+exports.gFindManyByIds = (conn, entityName, ids, options)->
+    options = options || {}
+    options.criteria = {__type: 'relation', field: '_id', operator: 'in', value: ids}
+    options.pageSize = -1
+    options.withoutTotal = true
+
+    yield from exports.gList(conn, entityName, options)
 
 exports.gWithTransaction = (entityMeta, gWork)->
     if entityMeta.db == Meta.DB.mysql

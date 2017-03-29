@@ -192,28 +192,28 @@ F.inputACL = {
 
         acl.action = []
         $field.find('.acl-action:first input.right:checked').each ->
-            acl.menu.push $(this).val()
+            acl.action.push $(this).val()
 
         acl.entity = {}
         $field.find('.acl-entity:first tbody tr').each ->
             $tr = $ this
             entityName = $tr.attr 'entityName'
             rights = []
-            acl.entity[entityName] = rights
             $tr.find('input:checked').each ->
                 rights.push $(this).val()
+            acl.entity[entityName] = rights if rights.length
 
         acl.field = {}
         $field.find('.acl-field-entity').each ->
             $entity = $ this
             entity = {}
-            acl.field[$entity.attr('entityName')] = entity
             $entity.find('tbody tr').each ->
                 $tr = $ this
                 field = []
-                entity[$tr.attr('fieldName')] = field
                 $tr.find('input:checked').each ->
                     field.push $(this).val()
+                entity[$tr.attr('fieldName')] = field if field.length
+            acl.field[$entity.attr('entityName')] = entity if _.size(entity)
 
         acl
 }
