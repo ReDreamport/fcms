@@ -131,3 +131,23 @@ exports.entityListToIdMap = (list)->
     map
 
 exports.objectIdsEquals = (a, b)-> a?.toString() == b?.toString()
+
+exports.inObjectIds = (targetId, ids)->
+    for id in ids
+        return true if id?.toString() == targetId
+    false
+
+# 向 EntityHandler list 接口解析后的 criteria 添加条件
+exports.addEqualsConditionToListCriteria = (query, field, value)->
+    if query.criteria
+        criteria = query.criteria
+        item = {field, value, operator: '=='}
+        if criteria.type == 'relation'
+            if criteria.relation == 'and'
+                query.criteria.items.push item
+            else if criteria.relation == 'or'
+                query.criteria = {__type: 'relation', relation: 'and', items: [criteria, item]}
+            else
+                query.criteria = {__type: 'relation', relation: 'and', items: [criteria, item]}
+    else
+        query.criteria = {"#{field}": value}

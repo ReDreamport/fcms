@@ -4,6 +4,7 @@ error = require '../error'
 log = require '../log'
 Meta = require '../Meta'
 config = require '../config'
+util = require '../util'
 
 EntityService = require '../service/EntityService'
 
@@ -47,6 +48,33 @@ exports.gRoleById = (id)->
         roleCache[id] = role
         PermissionService.permissionArrayToMap(role.acl)
     role
+
+exports.gRoleIdByName = (name)->
+    role = yield from EntityService.gFindOneByCriteria({}, 'F_UserRole', {name}, {includeFields: ['_id']})
+    role?._id
+
+exports.gAddRemoveRoleNameToUser = (userId, addRoles, removeRoles)->
+    return unless addRoles || removeRoles
+
+    user = yield from exports.gUserById(userId)
+    roles = user.roles || []
+
+    if addRoles
+        addRoleIds = for name in addRoles
+            yield from exports.gRoleIdByName(name)
+        for id in addRoleIds
+            roles.push id unless util.inObjectIds(id, roles)
+
+    if removeRoles
+        removeRoleIds = for name in removeRoles
+            yield from exports.gRoleIdByName(name)
+        roles2 = []
+        for id in roles
+            roles2.push id unless util.inObjectIds(id, removeRoleIds)
+        roles = roles2
+
+    yield from EntityService.gUpdateOneByCriteria({}, 'F_User', {_id: userId}, {roles})
+    delete userCache[userId]
 
 exports.gGetAnonymousRole = ->
     return anonymousRole if anonymousRole

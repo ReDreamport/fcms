@@ -63,7 +63,7 @@ FF.Reference = {
             e.preventDefault()
             false
 
-        $fieldInputSlot.on 'click', '.fw-remove-all-ref', (e)-> # 多值，删除所有项
+        $field.on 'click', '.fw-remove-all-ref', (e)-> # 多值，删除所有项
             $refs.empty()
             $refs.attr('value', "")
 
@@ -71,7 +71,7 @@ FF.Reference = {
             e.preventDefault()
             false
 
-        $fieldInputSlot.on 'click', '.fw-hide-all-ref', (e)->
+        $field.on 'click', '.fw-hide-all-ref', (e)->
             FF.toggleVisible($(this), $refs)
 
             e.stopPropagation()

@@ -148,20 +148,15 @@ F.enablePrintView = ($view)->
         $print.on 'mousedown', ->
             $print.remove()
 
-F.hasPermission = (category, targetPermission)->
-    # console.log(category + "/" + targetPermission)
-    user = F.user
-    return true if user[category]?[targetPermission]
-    if user.roles
-        for roleName, role of user.roles
-            return true if role[category]?[targetPermission]
-    return false
-
 F.hasEntityPermission = (action, entityName)->
-    # console.log(action + "/" + entityName)
-    (F.user.admin ||
-        F.hasPermission('urlPermissions', action) && (F.hasPermission('entityPermissions', action + '/' + entityName) ||
-            F.hasPermission('entityPermissions', '*/' + entityName)))
+    user = F.user
+    return true if user.admin
+    return true if user.acl?.entity?[entityName]?[action]
+    if user.roles
+        for rn, role of user.roles
+            return true if role.acl?.entity?[entityName]?[action]
+
+    false
 
 F.optionsArrayToMap = (options)->
     map = {}

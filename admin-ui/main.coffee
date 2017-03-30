@@ -129,27 +129,36 @@ F.openModalDialog = (options)->
 # main()
 #=======================
 
+F.logInit = (message)->
+    F.$mainPages.append "<div>" + message + "</div>"
+
 pingPromise = null
 F.ping = (forced)->
-    console.log('call ping')
     pingPromise = null if forced
     return pingPromise if pingPromise?
 
-    F.$mainPages.html 'ping...'
+    F.logInit 'Ping...'
     pingPromise = F.api.get 'api/ping'
-    pingPromise.then (user) -> F.user = user
+    pingPromise.then (user) ->
+        F.logInit 'Ping Successfully'
+        F.user = user
 
 F.fetchMeta = ->
+    F.logInit 'Fetching meta...'
     q = F.api.get "meta"
-    q.then (meta)-> F.meta = meta
+    q.then (meta)->
+        F.logInit 'Meta fetched'
+        F.meta = meta
 
 F.gotUser = ->
-    F.$mainPages.html 'fetching meta...'
     F.fetchMeta().then(F.initMenu).then ->
         F.initEntityGlobalEvent()
         reopenPages()
 
+F.$mainPages.html ''
 mainQ = F.ping(true).then(F.gotUser)
+mainQ.catch ->
+    F.logInit '初始化失败！'
 
 $ ->
     unless window.FormData

@@ -213,7 +213,7 @@ F.inputACL = {
                 $tr.find('input:checked').each ->
                     field.push $(this).val()
                 entity[$tr.attr('fieldName')] = field if field.length
-            acl.field[$entity.attr('entityName')] = entity if _.size(entity)
+            acl.field[$entity.attr('entityName')] = entity if F.objectSize(entity)
 
         acl
 }

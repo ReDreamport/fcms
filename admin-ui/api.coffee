@@ -35,6 +35,8 @@ fail = (jqxhr)->
     if jqxhr.status == 401
         console.log("401, to sign in")
         F.toSignIn()
+    else if jqxhr.status == 403
+        F.toastError '需要权限！'
 
     throw jqxhr
 

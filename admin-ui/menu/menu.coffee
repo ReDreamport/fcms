@@ -1,8 +1,12 @@
 fetchMenu = ->
-    F.$mainPages.html 'fetching menu...'
+    F.logInit 'Fetching menu data...'
     q = F.api.get 'entity/F_Menu?pageNo=1&pageSize=1'
-    q.catch -> q = null
-    q.then (r)-> r.page?[0]
+    q = q.then (r)->
+        F.logInit 'Menu data fetched'
+        r.page?[0]
+    q.catch (e)->
+        q = null
+        throw e
 
 canAccessMenu = (target)->
     user = F.user

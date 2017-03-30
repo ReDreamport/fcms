@@ -60,10 +60,12 @@ exports.gUpdateOneByCriteria = (entityMeta, criteria, instance)->
         throw new error.UniqueConflictError(code, message)
 
 exports.gRemoveManyByCriteria = (entityMeta, criteria)->
+    nativeCriteria = Mongo.toMongoCriteria(criteria)
+
     if entityMeta.removeMode == 'toTrash'
-        yield from _gRemoveManyToTrash(entityMeta, criteria)
+        yield from _gRemoveManyToTrash(entityMeta, nativeCriteria)
     else
-        yield from _gRemoveManyCompletely(entityMeta, criteria)
+        yield from _gRemoveManyCompletely(entityMeta, nativeCriteria)
 
 ###
 软删除有几种方式：放在单独的表中，放在原来的表中+使用标记字段。

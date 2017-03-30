@@ -1,6 +1,6 @@
 include ../EntityMixin
 
--var canEditEntity = F.user.admin || F.hasEntityPermission('UpdateOneEntity', entityMeta.name)
+-var canEditEntity = F.hasEntityPermission('UpdateOne', entityMeta.name)
 tbody
     each i in page
         tr(_id = i._id)
