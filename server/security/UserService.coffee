@@ -135,8 +135,11 @@ exports.gSignOut = (userId)->
 exports.gAddUser = (userInput)->
     user =
         _id: Meta.newObjectId().toString() # 用户 ID 同一直接用字符串
-        username: userInput.username, password: userInput.password
-        phone: userInput.phone, email: userInput.email
+        password: Meta.hashPassword(userInput.password)
+
+    user.username = userInput.username if userInput.username
+    user.phone = userInput.phone if userInput.phone
+    user.email = userInput.email if userInput.email
 
     yield from EntityService.gCreate({}, 'F_User', user)
 

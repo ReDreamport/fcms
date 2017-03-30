@@ -163,6 +163,7 @@ img.resource
         margin-left 0
 
 .main-bar
+    position relative
     box-sizing border-box
     height mainBarHeight
     line-height mainBarHeight
@@ -170,8 +171,8 @@ img.resource
     background cMainBar
     overflow hidden
 
-    .toggle-main-menu, .exit
-        display block
+    .toggle-main-menu, .exit, .show-log
+        display inline-block
         width mainBarHeight
         line-height mainBarHeight
         height mainBarHeight
@@ -179,7 +180,7 @@ img.resource
     .toggle-main-menu
         absolute(0, auto, 0, 0)
 
-    .exit
+    .right-actions
         absolute(0, 0, 0, auto)
 
     .main-title

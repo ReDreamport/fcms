@@ -213,10 +213,13 @@ exports.parseFieldValue = (value, fieldMeta)->
         if value then value else null # 空字符串转为 null
 
 exports.parseId = (id, entityMeta)->
+    entityMeta = exports.getEntityMeta(entityMeta) if _.isString entityMeta
     exports.parseFieldValue id, entityMeta.fields._id
 
 exports.parseIds = (ids, entityMeta)->
     return ids unless ids?
+
+    entityMeta = exports.getEntityMeta(entityMeta) if _.isString entityMeta
 
     idMeta = entityMeta.fields._id
     list = []

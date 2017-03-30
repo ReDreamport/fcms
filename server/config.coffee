@@ -11,7 +11,7 @@ exports.mongo = {url: ''}
 
 exports.mysql = null
 
-exports.mail = {}
+exports.mail = null
 
 exports.passwordFormat = /^([a-zA-Z0-9]){8,20}$/
 

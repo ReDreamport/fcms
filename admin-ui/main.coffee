@@ -129,9 +129,6 @@ F.openModalDialog = (options)->
 # main()
 #=======================
 
-F.logInit = (message)->
-    F.$mainPages.append "<div>" + message + "</div>"
-
 pingPromise = null
 F.ping = (forced)->
     pingPromise = null if forced
@@ -155,12 +152,14 @@ F.gotUser = ->
         F.initEntityGlobalEvent()
         reopenPages()
 
-F.$mainPages.html ''
-mainQ = F.ping(true).then(F.gotUser)
-mainQ.catch ->
-    F.logInit '初始化失败！'
-
 $ ->
     unless window.FormData
         message = "为了更好的使用体验，请使用现代浏览器，如 Chrome、Safari、最新版 IE 等。\n国产浏览器请使用极速模式，不要使用兼容模式。"
         F.toastWarning(message, 10000)
+
+    F.logInit = F.log
+
+    F.$mainPages.html ''
+    mainQ = F.ping(true).then(F.gotUser)
+    mainQ.catch ->
+        F.logInit '初始化失败！'

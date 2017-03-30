@@ -1,10 +1,10 @@
 
 @font-face {font-family: "iconfont";
-  src: url('iconfont.eot?t=1488265815733'); /* IE9*/
-  src: url('iconfont.eot?t=1488265815733#iefix') format('embedded-opentype'), /* IE6-IE8 */
-  url('iconfont.woff?t=1488265815733') format('woff'), /* chrome, firefox */
-  url('iconfont.ttf?t=1488265815733') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
-  url('iconfont.svg?t=1488265815733#iconfont') format('svg'); /* iOS 4.1- */
+  src: url('iconfont.eot?t=1490852870801'); /* IE9*/
+  src: url('iconfont.eot?t=1490852870801#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('iconfont.woff?t=1490852870801') format('woff'), /* chrome, firefox */
+  url('iconfont.ttf?t=1490852870801') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+  url('iconfont.svg?t=1490852870801#iconfont') format('svg'); /* iOS 4.1- */
 }
 
 .iconfont {
@@ -52,6 +52,8 @@
 .icon-form:before { content: "\e619"; }
 
 .icon-tablecollapse:before { content: "\e72b"; }
+
+.icon-log:before { content: "\e66d"; }
 
 .icon-save:before { content: "\e61e"; }
 
