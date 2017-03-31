@@ -13,7 +13,7 @@
             | 实体
         label
             input(name="section", type="radio", value="acl-field")
-            | 字段过滤
+            | 字段
 
     .acl-section.acl-menu
         .section-title 菜单
@@ -71,7 +71,7 @@
                                 input(type="checkbox", value=right, checked=($.inArray(right, entityRightChecked) >= 0))
 
     .acl-section.acl-field.hidden
-        .section-title 字段过滤
+        .section-title 字段
         -var fieldsChecked = aclValue.field || {}
 
         div
@@ -93,14 +93,12 @@
                     thead
                         tr
                             th 字段
-                            th *
+                            th 可见
                             th 新建
                             th 编辑
-                            th 查看
-                            th 列表
                         tr
                             th
-                            each i in [2,3,4,5,6]
+                            each i in [2,3,4]
                                 th
                                     input.check-column(type="checkbox", index=i)
                     tbody
@@ -108,7 +106,7 @@
                             -var fieldsCheckedOfFields = fieldsCheckedOfEntity[fieldName] || []
                             tr(fieldName=fieldName)
                                 td #{fieldMeta.label} [#{fieldMeta.name}]
-                                each right in ["*","Create","Update","View","List"]
+                                each right in ["show","create","edit"]
                                     td.check-td
                                         input.right(type="checkbox", value=right, checked=($.inArray(right, fieldsCheckedOfFields) >= 0))
 

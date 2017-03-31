@@ -18,7 +18,8 @@ F.removeFromArray = (array, value)->
     for v, index in array
         if v == value
             array.splice(index, 1)
-            return
+            return true
+    false
 
 uniqueIdNext = 0
 F.uniqueId = -> ++uniqueIdNext
@@ -158,6 +159,17 @@ F.hasEntityPermission = (action, entityName)->
             e = role.acl?.entity?[entityName]
             return true if e and (e[action] || e['*'])
 
+    false
+
+F.checkAclField = (entityName, fieldName, action)->
+    user = F.user
+    return false unless user
+    if user.acl?.field?[entityName]?[fieldName]?[action]
+        return true
+    if user.roles
+        for roleName,role of user.roles
+            if role.acl?.field?[entityName]?[fieldName]?[action]
+                return true
     false
 
 F.optionsArrayToMap = (options)->

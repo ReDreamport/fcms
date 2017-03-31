@@ -7,12 +7,20 @@ F.toViewEntity = (entityName, _id)->
     F.openOrAddPage pageId, title, 'F.toViewEntity', [entityName, _id], ($page)->
         $view = $(FT.ViewEntity({entityName, _id})).appendTo($page.find('.page-content'))
 
+        allFields = entityMeta.fields
+        fields = {}
+        for fn, fm of allFields
+            continue if fm.type == 'Password'
+            continue if fm.notShow and not F.checkAclField(entityMeta.name, fn, 'show')
+
+            fields[fn] = fm
+
         entityValue = null
         q = F.api.get "entity/#{entityName}/#{_id}"
         q.catch F.alertAjaxError
         q.then (value)->
             entityValue = value
-            $view.append FT.ViewEntityFields({entityValue, fields: entityMeta.fields})
+            $view.append FT.ViewEntityFields({entityValue, fields})
             F.loadDigestedEntities($view)
 
         $view.find('.remove-entity').click ->

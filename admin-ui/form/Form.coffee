@@ -89,8 +89,11 @@ FF.buildForm = (entityName, entityInitValue)->
         $formInput = $('.form-input:first', $form).empty()
         fields = entityMeta.fields
         for fieldName, fieldMeta of fields
-            continue if isCreate and fieldMeta.hideInCreatePage
-            continue if not isCreate and fieldMeta.hideInEditPage
+            continue if fieldMeta.notShow
+            if isCreate
+                continue if fieldMeta.noCreate and not F.checkAclField(entityMeta.name, fieldName, 'create')
+            else
+                continue if fieldMeta.noEdit and not F.checkAclField(entityMeta.name, fieldName, 'edit')
 
             fieldClass = "fn-#{fieldName} #{fClass} ftype-#{fieldMeta.type} finput-#{fieldMeta.inputType}"
             fieldClass += " of-multiple" if fieldMeta.multiple
@@ -194,10 +197,15 @@ FF.collectFieldInput = (form, fieldMeta)->
         FF[fieldMeta.inputType].getInput(form, fieldMeta.name)
 
 # 收集界面上输入的实体的值
-FF.collectFormInput = (form, formValue)->
+FF.collectFormInput = (form, formValue, isCreate)->
     fields = form.entityMeta.fields
-    # 不要把不需要输入的值清掉
-    for fieldName, fieldMeta of fields when not fieldMeta.readonly
+    for fieldName, fieldMeta of fields
+        continue if fieldMeta.notShow
+        if isCreate
+            continue if fieldMeta.noCreate and not F.checkAclField(form.entityMeta.name, fieldName, 'create')
+        else
+            continue if fieldMeta.noEdit and not F.checkAclField(form.entityMeta.name, fieldName, 'edit')
+
         fv = FF.collectFieldInput form, fieldMeta
         formValue[fieldName] = fv if fv != undefined
     # 取此表单的版本号

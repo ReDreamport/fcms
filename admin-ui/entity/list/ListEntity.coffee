@@ -37,17 +37,19 @@ F.enableListEntity = (entityMeta, $view, build$table, build$tbody, onPageRefresh
     $action = $(FT.EntityListPaging({entityName: entityMeta.name, entityMeta})).appendTo($view)
 
     fields = entityMeta.fields
-    fieldNames = [] # 不含 _id、_version，其他系统字段放最后
+    fieldNames = []
     columnsDisplay = {}
     for fn, fm of fields
-        show = (fm.type != 'Password' and !fm.hideInListPage and fn != '_id' and fn != '_version' and
-            fn != '_createdOn' and fn != '_createdBy' and fn != '_modifiedOn' and fn != '_modifiedBy')
-        fieldNames.push fn if show
+        continue if fn == '_id' || fn == '_version' # 不含 _id、_version
+        continue if fm.type == 'Password' || fm.hideInListPage
+        continue if fm.notShow and not F.checkAclField(entityMeta.name, fn, 'show')
 
-    fieldNames.push '_createdOn' unless fields._createdOn.hideInListPage
-    fieldNames.push '_createdBy' unless fields._createdBy.hideInListPage
-    fieldNames.push '_modifiedOn' unless fields._modifiedOn.hideInListPage
-    fieldNames.push '_modifiedBy' unless fields._modifiedBy.hideInListPage
+        fieldNames.push fn
+
+    # 其他系统字段放最后
+    for systemField in ['_createdOn', '_createdBy', '_modifiedOn', '_modifiedBy']
+        if F.removeFromArray fieldNames, systemField
+            fieldNames.push systemField
 
     columnsDisplay[name] = true for name in fieldNames
 

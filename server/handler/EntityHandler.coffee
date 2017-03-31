@@ -21,7 +21,7 @@ exports.gCreateEntity = ->
     throw new error.UserError("EmptyOperation") unless instance
 
     instance = Meta.parseEntity(instance, entityMeta)
-    # TODO 按权限字段过滤
+    exports.removeNoCreateFields entityMeta, @state.user, instance
 
     fieldCount = 0
     for key, value of instance
@@ -54,7 +54,7 @@ exports.gUpdateEntityById = ->
     criteria = {_id, _version: instance._version}
 
     instance = Meta.parseEntity(instance, entityMeta)
-    # TODO 按权限字段过滤
+    exports.removeNoEditFields entityMeta, @state.user, instance
 
     instance._modifiedBy = @state.user?._id
 
@@ -82,7 +82,7 @@ exports.gUpdateEntityInBatch = ->
     iv.id = Meta.parseId(iv.id, entityMeta) for iv in idVersions
 
     patch = Meta.parseEntity(patch, entityMeta)
-    # TODO 按权限字段过滤
+    exports.removeNoEditFields entityMeta, @state.user, patch
 
     patch._modifiedBy = @state.user?._id
 
@@ -155,9 +155,9 @@ exports.gFindOneById = ->
         yield from gIntercept conn, criteria, operator, ->
             yield from EntityService.gFindOneByCriteria(conn, entityName, criteria, {repo: @query?._repo})
 
-    # TODO 按权限字段过滤
+    exports.removeNotShownFields(entityMeta, @state.user, entity)
 
-    entity = Meta.outputEntityToHTTP(entity, entityMeta)
+    entity = Meta.formatEntityToHttp(entity, entityMeta)
 
     if entity
         @body = entity
@@ -178,11 +178,9 @@ exports.gList = ->
         yield from gIntercept conn, query, operator, ->
             yield from EntityService.gList conn, entityName, query
 
-    # TODO 过滤 notInListAPI 的字段
-    # TODO 权限字段过滤
-    # TODO 密码等字段过滤
+    exports.removeNotShownFields(entityMeta, @state.user, r.page...)
 
-    page = (Meta.outputEntityToHTTP(i, entityMeta) for i in r.page)
+    page = (Meta.formatEntityToHttp(i, entityMeta) for i in r.page)
     r.page = page
 
     r.pageNo = query.pageNo
@@ -285,3 +283,58 @@ exports.gRemoveFilters = ->
     })
 
     @status = 204
+
+checkAclField = (user, entityName, fieldName, action)->
+    return false unless user
+    if user.acl?.field?[entityName]?[fieldName]?[action]
+        return true
+    if user.roles
+        for roleName,role of user.roles
+            if role.acl?.field?[entityName]?[fieldName]?[action]
+                return true
+    false
+
+# 过滤掉不显示的字段
+exports.removeNotShownFields = (entityMeta, user, entities...)->
+    fields = entityMeta.fields
+
+    removedFieldNames = []
+    for fieldName, fieldMeta of fields
+        if fieldMeta.type == 'Password'
+            removedFieldNames.push fieldName
+        else if fieldMeta.notShow
+            unless checkAclField user, entityMeta.name, fieldName, 'show'
+                removedFieldNames.push fieldName
+
+    if entities?.length and removedFieldNames.length
+        for e in entities
+            for field in removedFieldNames
+                delete e[field]
+
+# 过滤掉不允许创建的字段
+exports.removeNoCreateFields = (entityMeta, user, entity)->
+    fields = entityMeta.fields
+
+    removedFieldNames = []
+    for fieldName, fieldMeta of fields
+        if fieldMeta.noCreate
+            unless checkAclField user, entityMeta.name, fieldName, 'create'
+                removedFieldNames.push fieldName
+
+    if removedFieldNames.length
+        for field in removedFieldNames
+            delete entity[field]
+
+# 过滤掉不允许编辑的字段
+exports.removeNoEditFields = (entityMeta, user, entity)->
+    fields = entityMeta.fields
+
+    removedFieldNames = []
+    for fieldName, fieldMeta of fields
+        if fieldMeta.noEdit || fieldMeta.editReadonly
+            unless checkAclField user, entityMeta.name, fieldName, 'edit'
+                removedFieldNames.push fieldName
+
+    if removedFieldNames.length
+        for field in removedFieldNames
+            delete entity[field]

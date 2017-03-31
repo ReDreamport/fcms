@@ -7,7 +7,6 @@ mixin listFields(fieldNames, entityValue, entityMeta)
             +renderFieldValue(fm, entityValue, false)
 
 mixin viewEntityTable(fields, entityValue, systemFields)
-    -var fields = systemFields && fields || F.removeSystemFields(fields)
     table.view-entity-table.simple(style="display: inline-table;")
         each fieldMeta in fields
             tr

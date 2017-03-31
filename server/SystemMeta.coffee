@@ -20,35 +20,34 @@ patchSystemFields = (entityMeta)->
     userIdPersistType = dbType == Meta.DB.mongo && 'String' || 'char'
 
     fields._id = {
-        system: true, name: "_id", label: "ID", fastFilter: true
+        system: true, name: "_id", label: "ID", fastFilter: true, required: true
         type: idType, persistType: idPersistType, sqlColM: Meta.ObjectIdStringLength
-        inputType: "Text", readonly: true, hideInCreatePage: true
-        required: true
+        inputType: "Text", noCreate: true, noEdit: true
     }
     fields._version = {
         system: true, name: "_version", label: "修改版本",
         type: "Int", persistType: intPersistType, sqlColM: 12
-        inputType: "Int", readonly: true, hideInCreatePage: true, hideInListPage: true
+        inputType: "Int", noCreate: true, noEdit: true, hideInListPage: true
     }
     fields._createdOn = {
         system: true, name: "_createdOn", label: "创建时间",
         type: "DateTime", persistType: timestampPersistType
-        inputType: "DateTime", readonly: true, hideInCreatePage: true, hideInEditPage: true
+        inputType: "DateTime", noCreate: true, noEdit: true
     }
     fields._modifiedOn = {
         system: true, name: "_modifiedOn", label: "修改时间",
         type: "DateTime", persistType: timestampPersistType
-        inputType: "DateTime", readonly: true, hideInCreatePage: true, hideInEditPage: true
+        inputType: "DateTime", noCreate: true, noEdit: true
     }
     fields._createdBy = {
         system: true, name: "_createdBy", label: "创建人",
         type: "Reference", refEntity: 'F_User', persistType: userIdPersistType, sqlColM: Meta.ObjectIdStringLength
-        inputType: "Reference", readonly: true, hideInCreatePage: true, hideInEditPage: true, hideInListPage: true
+        inputType: "Reference", noCreate: true, noEdit: true, hideInListPage: true
     }
     fields._modifiedBy = {
         system: true, name: "_modifiedBy", label: "修改人",
         type: "Reference", refEntity: 'F_User', persistType: userIdPersistType, sqlColM: Meta.ObjectIdStringLength
-        inputType: "Reference", readonly: true, hideInCreatePage: true, hideInEditPage: true, hideInListPage: true
+        inputType: "Reference", noCreate: true, noEdit: true, hideInListPage: true
     }
 
     entityMeta.fields = _.assign(fields, entityMeta.fields)
@@ -64,7 +63,7 @@ SystemEntities = {
         db: Meta.DB.none
         fields:
             system:
-                name: 'system', label: '系统实体', type: 'Boolean', inputType: "Check", readonly: true
+                name: 'system', label: '系统实体', type: 'Boolean', inputType: "Check", noCreate: true, noEdit: true
             name:
                 name: 'name', label: '名称', type: 'String', inputType: "Text"
             label:
@@ -108,7 +107,7 @@ SystemEntities = {
         editEnhanceFunc: 'F.enhanceFieldMetaEdit'
         fields:
             system:
-                name: 'system', label: '系统字段', type: 'Boolean', inputType: "Check", readonly: true
+                name: 'system', label: '系统字段', type: 'Boolean', inputType: "Check", noCreate: true, noEdit: true
                 hideInListPage: true
             name:
                 name: 'name', label: '字段名', type: 'String', inputType: "Text"
@@ -136,20 +135,17 @@ SystemEntities = {
             inputRequired:
                 name: 'inputRequired', label: '输入值不能为空', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
-            readonly:
-                name: 'readonly', label: '只读', type: 'Boolean', inputType: "Check"
+            notShow:
+                name: 'notShow', label: '界面隐藏', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
-            hideInCreatePage:
-                name: 'hideInCreatePage', label: '新增页面不显示', type: 'Boolean', inputType: "Check"
+            noCreate:
+                name: 'noCreate', label: '不允许创建', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
-            hideInEditPage:
-                name: 'hideInEditPage', label: '编辑页面不显示', type: 'Boolean', inputType: "Check"
+            noEdit:
+                name: 'noEdit', label: '不允许编辑', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
             hideInListPage:
                 name: 'hideInListPage', label: '列表页面不显示', type: 'Boolean', inputType: "Check"
-                hideInListPage: true
-            hideInViewPage:
-                name: 'hideInViewPage', label: '查看页面不显示', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
             persistType:
                 name: 'persistType', label: '存储类型', type: 'String', inputType: "Select",
@@ -222,7 +218,7 @@ SystemEntities = {
         name: 'F_EntityViewMeta', label: '实体视图元数据'
         fields:
             system:
-                name: 'system', label: '系统实体', type: 'Boolean', inputType: "Check", readonly: true
+                name: 'system', label: '系统实体', type: 'Boolean', inputType: "Check", noCreate: true, noEdit: true
             name:
                 name: 'name', label: '名称', type: 'String', inputType: "Text"
             label:
@@ -255,7 +251,7 @@ SystemEntities = {
         editEnhanceFunc: 'F.emptyFunction'
         fields:
             system:
-                name: 'system', label: '系统字段', type: 'Boolean', inputType: "Check", readonly: true
+                name: 'system', label: '系统字段', type: 'Boolean', inputType: "Check", noCreate: true, notEdit: true
                 hideInListPage: true
             name:
                 name: 'name', label: '字段名', type: 'String', inputType: "Text"
@@ -275,20 +271,14 @@ SystemEntities = {
             inputRequired:
                 name: 'inputRequired', label: '输入值不能为空', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
-            readonly:
-                name: 'readonly', label: '只读', type: 'Boolean', inputType: "Check"
+            noCreate:
+                name: 'noCreate', label: '创建时隐藏', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
-            hideInCreatePage:
-                name: 'hideInCreatePage', label: '新增页面不显示', type: 'Boolean', inputType: "Check"
-                hideInListPage: true
-            hideInEditPage:
-                name: 'hideInEditPage', label: '编辑页面不显示', type: 'Boolean', inputType: "Check"
+            noEdit:
+                name: 'noEdit', label: '编辑时隐藏', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
             hideInListPage:
                 name: 'hideInListPage', label: '列表页面不显示', type: 'Boolean', inputType: "Check"
-                hideInListPage: true
-            hideInViewPage:
-                name: 'hideInViewPage', label: '查看页面不显示', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
             options:
                 name: 'options', label: '输入选项', type: 'Component', refEntity: "F_FieldInputOption",
@@ -488,32 +478,37 @@ SystemEntities = {
         fields:
             state:
                 name: 'state', label: '状态'
-                type: 'Int', inputType: "Int", readonly: true, persistType: "tinyint", sqlColM: 1
+                type: 'Int', inputType: "Int", noCreate: true, noEdit: true, persistType: "tinyint", sqlColM: 1
                 options: [{name: 0, label: '未支付'}, {name: 1, label: '成功'}, {name: 2, label: '失败'}]
             stateDecidedOn:
                 name: 'stateDecidedOn', label: '状态确定时间'
-                type: 'Date', inputType: "Date", readonly: true, persistType: "timestamp"
+                type: 'Date', inputType: "Date", noCreate: true, noEdit: true, persistType: "timestamp"
             provider:
                 name: 'provider', label: '支付渠道'
-                type: 'Int', inputType: "Select", readonly: true, persistType: "varchar", sqlColM: 10
+                type: 'Int', noCreate: true, noEdit: true, persistType: "varchar", sqlColM: 10
+                inputType: "Select",
                 options: [{name: 'aliweb', label: '支付宝网页'}, {name: 'weixinweb', label: '微信网页'}]
                 required: true
             amount:
                 name: 'amount', label: '金额'
-                type: 'Int', inputType: "Int", readonly: true, persistType: "bigint", sqlColM: 15
+                type: 'Int', inputType: "Int", noCreate: true, noEdit: true, persistType: "bigint", sqlColM: 15
                 required: true
             business:
                 name: 'business', label: '业务类型'
-                type: 'String', inputType: "Text", readonly: true, persistType: "varchar", sqlColM: 20
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true,
+                persistType: "varchar", sqlColM: 20
             businessId:
                 name: 'businessId', label: '业务单号'
-                type: 'String', inputType: "Text", readonly: true, persistType: "varchar", sqlColM: 40
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true,
+                persistType: "varchar", sqlColM: 40
             providerFlowNo:
                 name: 'providerFlowNo', label: '渠道单号'
-                type: 'String', inputType: "Text", readonly: true, persistType: "varchar", sqlColM: 60
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true,
+                persistType: "varchar", sqlColM: 60
             buyer:
                 name: 'buyer', label: '付款人'
-                type: 'String', inputType: "Text", readonly: true, persistType: "varchar", sqlColM: 60
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true,
+                persistType: "varchar", sqlColM: 60
     F_TppCallback:
         system: true
         name: 'F_TppCallback', label: '第三方支付回调',
@@ -521,32 +516,28 @@ SystemEntities = {
         digestFields: ''
         fields:
             payTranId:
-                name: 'payTranId',
-                label: '支付'
-                type: 'Reference',
-                refEntity: 'F_TppTran',
-                inputType: "Reference",
-                readonly: true,
+                name: 'payTranId', label: '支付', type: 'Reference', refEntity: 'F_TppTran',
+                inputType: "Reference", noCreate: true, noEdit: true,
                 persistType: "String"
             tpTradeNo:
                 name: 'tpTradeNo', label: '渠道单号'
-                type: 'String', inputType: "Text", readonly: true, persistType: "String"
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true, persistType: "String"
             tpResultCode:
                 name: 'tpResultCode', label: '渠道结果代码'
-                type: 'String', inputType: "Text", readonly: true, persistType: "String"
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true, persistType: "String"
             tpResultMessage:
                 name: 'tpResultMessage', label: '渠道结果'
-                type: 'String', inputType: "Text", readonly: true, persistType: "String"
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true, persistType: "String"
             buyer:
                 name: 'buyer', label: '付款人'
-                type: 'String', inputType: "Text", readonly: true, persistType: "String"
+                type: 'String', inputType: "Text", noCreate: true, noEdit: true, persistType: "String"
             source:
                 name: 'source', label: '回调途径'
-                type: 'String', inputType: "Select", readonly: true, persistType: "String"
+                type: 'String', inputType: "Select", noCreate: true, noEdit: true, persistType: "String"
                 options: [{name: 'page', label: '界面'}, {name: 'server', label: '服务器'}]
             callbackBody:
                 name: 'callbackBody', label: '回调全文'
-                type: 'String', inputType: "TextArea", readonly: true, persistType: "String"
+                type: 'String', inputType: "TextArea", noCreate: true, noEdit: true, persistType: "String"
     F_PageHead:
         system: true
         name: 'F_PageHead', label: '页面头部信息',

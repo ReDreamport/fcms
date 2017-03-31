@@ -228,7 +228,7 @@ exports.parseIds = (ids, entityMeta)->
         list.push i if i?
     list
 
-exports.outputFieldToHTTP = (fieldValue, fieldMeta)->
+exports.formatFieldToHttp = (fieldValue, fieldMeta)->
     return fieldValue unless fieldValue?
 
     if isDateOrTimeType(fieldMeta.type)
@@ -241,9 +241,9 @@ exports.outputFieldToHTTP = (fieldValue, fieldMeta)->
         throw new Error "No ref entity [#{fieldMeta.refEntity}]. Field #{fieldMeta.name}" unless refEntityMeta?
 
         if fieldMeta.multiple
-            (exports.outputEntityToHTTP(i, refEntityMeta) for i in fieldValue)
+            (exports.formatEntityToHttp(i, refEntityMeta) for i in fieldValue)
         else
-            exports.outputEntityToHTTP(fieldValue, refEntityMeta)
+            exports.formatEntityToHttp(fieldValue, refEntityMeta)
     else if fieldMeta.type == "Reference"
         fieldValue # TODO 原样输出即可
     else if fieldMeta.type == "Password"
@@ -251,13 +251,13 @@ exports.outputFieldToHTTP = (fieldValue, fieldMeta)->
     else
         fieldValue
 
-exports.outputEntityToHTTP = (entityValue, entityMeta)->
+exports.formatEntityToHttp = (entityValue, entityMeta)->
     return entityValue unless entityValue?
 
     output = {}
 
     for fName, fieldMeta of entityMeta.fields
-        o = exports.outputFieldToHTTP entityValue[fName], fieldMeta
+        o = exports.formatFieldToHttp entityValue[fName], fieldMeta
         output[fName] = o unless _.isUndefined(o)
 
     output
