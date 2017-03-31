@@ -144,7 +144,12 @@ FF.buildForm = (entityName, entityInitValue)->
         $fJson.show()
 
         json = {}
-        FF.collectFormInput form, json
+        try
+            FF.collectFormInput form, json
+        catch e
+            F.toastError(e)
+            return
+
         $fJson.find('textarea:first').val(JSON.stringify(json, null, 4))
 
         e.stopPropagation()

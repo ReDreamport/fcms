@@ -1,4 +1,11 @@
 include ../FieldItemMixin
 
 +FieldItem(field, fClass)
-    input.fw-field-item-input(class=fClass, type="date", value=F.formatDate(value, 'YYYY-MM-DD'), disabled=field.readonly)
+    -var m = value && moment(value)
+    .fw-field-item-input.input-date(class=fClass)
+        input.date-year(type="number", disabled=field.readonly, value=m && m.year())
+        span 年
+        input.date-month(type="number", disabled=field.readonly, value=m && (m.month() + 1))
+        span 月
+        input.date-day(type="number", disabled=field.readonly, value=m && m.date())
+        span 日

@@ -151,10 +151,12 @@ F.enablePrintView = ($view)->
 F.hasEntityPermission = (action, entityName)->
     user = F.user
     return true if user.admin
-    return true if user.acl?.entity?[entityName]?[action]
+    e = user.acl?.entity?[entityName]
+    return true if e and (e[action] || e['*'])
     if user.roles
         for rn, role of user.roles
-            return true if role.acl?.entity?[entityName]?[action]
+            e = role.acl?.entity?[entityName]
+            return true if e and (e[action] || e['*'])
 
     false
 

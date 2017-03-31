@@ -28,7 +28,11 @@ editEntityOrView = (editedEntityName, objectName, objectLabel, metaName, funcNam
                 return if saving
 
                 editedEntityMeta = {}
-                F.Form.collectFormInput(form, editedEntityMeta)
+                try
+                    F.Form.collectFormInput(form, editedEntityMeta)
+                catch e
+                    F.toastError(e)
+                    return
 
                 # 字段数组转字段对象
                 fieldArray = editedEntityMeta.fields

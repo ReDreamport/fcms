@@ -16,6 +16,9 @@ gCatchError = (next)->
     else
         try
             yield next
+
+            if @status == 404
+                @render 'e404'
         catch e
             if e instanceof error.Error401
                 @status = 401
@@ -26,38 +29,35 @@ gCatchError = (next)->
             else if e instanceof error.Error403
                 @status = 403
                 if @route.info?.isPage
-                    @render '403'
+                    @render 'e403'
                 else
                     @body = e.describe()
             else if e instanceof error.UserError
                 @status = 400
                 if @route.info?.isPage
-                    @render '400'
+                    @render 'e400'
                 else
                     @body = e.describe()
             else
                 @status = 500
                 log.system.error e, e.message, 'catch all'
                 if @route.info?.isPage
-                    @render '500'
+                    @render 'e500'
 
 exports.gStart = ->
     koa = require 'koa'
     koaServer = koa()
     koaServer.keys = [config.cookieKey]
     koaServer.proxy = true
+    # jade
+    koaServer.use(require('./jade').jade.middleware)
 
     router = require './router'
     router.refresh()
 
     koaServer.use router.parseRoute
 
-    # 匹配路由的过程不需要拦截错误
-
-    koaServer.use gCatchError
-
-    # jade
-    koaServer.use(require('./jade').jade.middleware)
+    koaServer.use gCatchError # 匹配路由的过程不需要拦截错误
 
     ac = require('../handler/AccessController')
     koaServer.use ac.gIdentifyUser

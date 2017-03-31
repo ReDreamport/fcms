@@ -155,6 +155,7 @@ exports.parseRoute = (next)->
     else
         log.debug 'fail to match route,', {method: @request.method, path: path}
         @status = 404
+        @render 'e404'
 
 # 执行路由的处理器
 exports.handleRoute = (next)->

@@ -45,7 +45,12 @@ F.toUpdateEntity = (entityName, _id)->
             return unless readyToEdit and not saving
 
             entity = {}
-            F.Form.collectFormInput(form, entity, isCreate)
+            try
+                F.Form.collectFormInput(form, entity, isCreate)
+            catch e
+                F.toastError(e)
+                return
+
             saving = true
             $saveBtn.html '保存中...'
 
@@ -78,7 +83,12 @@ F.openEditEntityDialog = (entityName, entityValue, callback)->
 
     $view.find('.save:first').click ->
         entity = {}
-        F.Form.collectFormInput(form, entity)
+        try
+            F.Form.collectFormInput(form, entity)
+        catch e
+            F.toastError(e)
+            return
+
         callback(entity)
         win.close()
 
