@@ -124,7 +124,7 @@ F.enhanceFieldMetaEdit = (entityMeta, form)->
 
     onTypeChange = ->
         type = F.Form.Select.getInput(form, 'type')
-        FS.setDisplay $fieldRefEntity, (type == 'Reference'), visibleDisplay
+        FS.setDisplay $fieldRefEntity, (type == 'Reference' || type == 'Component'), visibleDisplay
 
         v = type == 'Image' || type == 'File'
         FS.setDisplay $fieldFileStoreDir, v, visibleDisplay
