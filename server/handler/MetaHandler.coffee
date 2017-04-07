@@ -32,6 +32,20 @@ exports.gSaveMeta = ->
 
     @status = 204
 
+exports.gImportMeta = ->
+    meta = @request.body
+
+    for e in meta.entities
+        delete e._id
+        yield from Meta.gSaveEntityMeta(e.name, e)
+
+    for v in meta.views
+        delete v._id
+        yield from Meta.gSaveViewMeta(v.name, v)
+
+    @status = 204
+
+
 exports.gRemoveMeta = ->
     type = @params.type
     name = @params.name

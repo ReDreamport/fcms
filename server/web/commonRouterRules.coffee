@@ -17,15 +17,16 @@ actions =
 Meta.actions[k] = v for k,v of actions
 
 exports.addCommonRouteRules = (rrr)->
-    # ======================================
-    # 元数据管理
-    # ======================================
+# ======================================
+# 元数据管理
+# ======================================
     MetaHandler = require('../handler/MetaHandler')
 
     rrr.get '/meta', {action: 'ReadMeta'}, MetaHandler.gGetAllMeta
     rrr.get '/meta-empty', {action: 'WriteMeta'}, MetaHandler.gGetEmptyEntityMeta
     rrr.get '/meta/:type/:name', {action: 'ReadMeta'}, MetaHandler.gGetMeta
     rrr.put '/meta/:type/:name', {action: 'WriteMeta'}, MetaHandler.gSaveMeta
+    rrr.post '/meta', {action: 'WriteMeta'}, MetaHandler.gImportMeta
     rrr.del '/meta/:type/:name', {action: 'WriteMeta'}, MetaHandler.gRemoveMeta
 
     rrr.get '/meta/actions', {action: 'WriteMeta'}, MetaHandler.gGetActions
