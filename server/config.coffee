@@ -15,7 +15,7 @@ exports.mail = null
 
 exports.passwordFormat = /^([a-zA-Z0-9]){8,20}$/
 
-exports.signUpMessage = ''
+exports.emailOrg = ''
 
 exports.fileDir = ''
 

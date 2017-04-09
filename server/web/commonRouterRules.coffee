@@ -5,7 +5,6 @@ Meta = require '../Meta'
 actions =
     ReadMeta: '读取元数据'
     WriteMeta: '修改元数据'
-    ChangePassword: '修改密码接口'
     ChangePhone: '修改绑定手机接口'
     ChangeEmail: '修改绑定邮箱接口'
     PreFilters: '管理预定义查询'
@@ -40,7 +39,7 @@ exports.addCommonRouteRules = (rrr)->
     rrr.get '/api/ping', {auth: true}, UserHandler.gPing
     rrr.post '/api/sign-in', {}, UserHandler.gSignIn
     rrr.post '/api/sign-out', {auth: true}, UserHandler.gSignOut
-    rrr.post '/api/change-password', {action: 'ChangePassword'}, UserHandler.gChangePassword
+    rrr.post '/api/change-password', {auth: true}, UserHandler.gChangePassword
     rrr.post '/api/reset-password', {}, UserHandler.gResetPassword
     rrr.post '/api/change-phone', {action: 'ChangePhone'}, UserHandler.gChangePhone
     rrr.post '/api/change-email', {action: 'ChangeEmail'}, UserHandler.gChangeEmail

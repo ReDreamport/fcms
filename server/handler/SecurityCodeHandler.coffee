@@ -41,7 +41,7 @@ exports.gSendSignUpCodeToEmail = ->
     email = @params.email
     return @status = 400 unless email
 
-    message = config.signUpMessage
+    message = config.emailOrg + " - 邮箱验证"
     yield from SecurityCodeService.gSendSecurityCodeToEmail(email, message, message)
     @status = 204
 

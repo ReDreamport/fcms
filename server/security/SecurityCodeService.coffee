@@ -22,7 +22,7 @@ exports.check = (target, code)->
 # 发送验证码到邮箱
 exports.gSendSecurityCodeToEmail = (toEmail, subject, purpose)->
     code = _generateSecurityCode(toEmail)
-    yield from MailService.gSendEmail(toEmail, subject, "#{purpose}。您本次操作的验证码是 #{code}。")
+    yield from MailService.gSendEmail(toEmail, subject, "您好，本次操作的验证码是 #{code}。#{purpose}。")
 
 # TODO 发送验证码到手机
 gSendSecurityCodeToPhone = (phone, purpose)->
