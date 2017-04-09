@@ -67,6 +67,7 @@ F.toMetaIndex = ->
                 meta = JSON.parse meta
             catch
                 F.toastError('解析JSON失败')
+                return
 
             entityNames = (entity.name for entity in meta.entities)
             viewNames = (view.name for view in meta.views)

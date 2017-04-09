@@ -23,4 +23,4 @@ F.parseXhrErrorMessage = (xhr)->
     try
         xhr.responseText && JSON.parse(xhr.responseText).message || "#{xhr.status}:#{xhr.responseText}"
     catch
-        "#{xhr.status}:#{xhr.responseText}"
+        "#{xhr.status}"

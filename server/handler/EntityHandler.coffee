@@ -155,11 +155,9 @@ exports.gFindOneById = ->
         yield from gIntercept conn, criteria, operator, ->
             yield from EntityService.gFindOneByCriteria(conn, entityName, criteria, {repo: @query?._repo})
 
-    exports.removeNotShownFields(entityMeta, @state.user, entity)
-
-    entity = Meta.formatEntityToHttp(entity, entityMeta)
-
     if entity
+        exports.removeNotShownFields(entityMeta, @state.user, entity)
+        entity = Meta.formatEntityToHttp(entity, entityMeta)
         @body = entity
     else
         @status = 404
@@ -307,9 +305,10 @@ exports.removeNotShownFields = (entityMeta, user, entities...)->
                 removedFieldNames.push fieldName
 
     if entities?.length and removedFieldNames.length
-        for e in entities
+        for e in entities when e?
             for field in removedFieldNames
                 delete e[field]
+                false
 
 # 过滤掉不允许创建的字段
 exports.removeNoCreateFields = (entityMeta, user, entity)->
@@ -324,6 +323,7 @@ exports.removeNoCreateFields = (entityMeta, user, entity)->
     if removedFieldNames.length
         for field in removedFieldNames
             delete entity[field]
+            false
 
 # 过滤掉不允许编辑的字段
 exports.removeNoEditFields = (entityMeta, user, entity)->
@@ -338,3 +338,4 @@ exports.removeNoEditFields = (entityMeta, user, entity)->
     if removedFieldNames.length
         for field in removedFieldNames
             delete entity[field]
+            false

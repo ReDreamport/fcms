@@ -17,11 +17,11 @@ class MongoStore
             @db = null
             log.system.info "MongoDB [#{@name}] closed"
 
-        db.on 'error', (e)->
+        db.on 'error', (e)=>
             @db = null
             log.system.error e, "MongoDB [#{@name}] error"
 
-        db.on 'reconnect', ->
+        db.on 'reconnect', =>
             log.system.info "Mongo DB [#{@name}] reconnect"
 
         @db = db

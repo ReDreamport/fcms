@@ -17,7 +17,9 @@ F.toViewEntity = (entityName, _id)->
 
         entityValue = null
         q = F.api.get "entity/#{entityName}/#{_id}"
-        q.catch F.alertAjaxError
+        q.catch (jqxhr)->
+            F.removePage(pageId) # 加载失败移除页面
+            F.alertAjaxError jqxhr
         q.then (value)->
             entityValue = value
             $view.append FT.ViewEntityFields({entityValue, fields})
