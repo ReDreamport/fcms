@@ -18,7 +18,7 @@ F.toSelectEntity = (entityName, multipleOption, selectedEntityIds, callback)->
                 if (_id in selectedEntityIds) or newSelectedIds[_id]
                     $this.find('.select:first').prop('checked', true)
 
-    {$action, $table, $refreshPageBtn} = F.enableListEntity(entityMeta, $view, build$table, build$tbody, onPageRefresh)
+    {$action, $table, $refreshPageBtn} = F.enableListEntity(entityMeta, $view, build$table, build$tbody, null, onPageRefresh)
 
     $table.addClass('hl-row')
 

@@ -9,7 +9,7 @@ F.toListEntity = (entityName)->
         build$table = (fieldNames)-> $ FT.ListEntityTable {fieldNames, entityMeta}
         build$tbody = (fieldNames, page) -> FT.ListEntityTbody {fieldNames, page, entityMeta}
 
-        {$action, $table, $refreshPageBtn} = F.enableListEntity(entityMeta, $view, build$table, build$tbody)
+        {$action, $table, $refreshPageBtn} = F.enableListEntity(entityMeta, $view, build$table, build$tbody, pageId)
 
         $table.on 'click', '.remove-entity', ->
             _id = $(this).attr("_id")
@@ -33,7 +33,7 @@ F.toListEntity = (entityName)->
                 F.toastSuccess('删除成功')
                 $refreshPageBtn.click()
 
-F.enableListEntity = (entityMeta, $view, build$table, build$tbody, onPageRefresh)->
+F.enableListEntity = (entityMeta, $view, build$table, build$tbody, pageId, onPageRefresh)->
     $action = $(FT.EntityListPaging({entityName: entityMeta.name, entityMeta})).appendTo($view)
 
     fields = entityMeta.fields
@@ -207,7 +207,6 @@ F.enableListEntity = (entityMeta, $view, build$table, build$tbody, onPageRefresh
 
             # 修改关联实体
             $('.edit-refs:first', $filterInput).click ->
-                $closestView = $filterInput.closest('.view')
                 multipleOptions = {multiple: multiple, multipleUnique: true}
                 selectedEntityIds = []
                 $filterInput.find('.filter-input-item:visible').each -> selectedEntityIds.push $(this).attr('_id')
@@ -351,7 +350,9 @@ F.enableListEntity = (entityMeta, $view, build$table, build$tbody, onPageRefresh
         query._sortOrder = $action.find('.sort-order:first').val()
 
         q = F.api.get "entity/" + entityMeta.name, query
-        q.catch F.alertAjaxError
+        q.catch (jqxhr)->
+            F.removePage(pageId) if pageId # 加载失败移除页面
+            F.alertAjaxError jqxhr
         q.then (r)->
             $view.find('.total').html r.total
             pageNum = Math.ceil(r.total / pageSize)
