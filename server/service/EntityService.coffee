@@ -138,7 +138,7 @@ exports.gList = (conn, entityName, {repo, criteria, pageNo, pageSize, sort, incl
 
 exports.gFindManyByCriteria = (conn, entityName, options)->
     options = options || {}
-    options.pageSize = -1
+    options.pageSize = options.pageSize ? -1
     options.withoutTotal = true
 
     yield from exports.gList(conn, entityName, options)
