@@ -187,6 +187,9 @@ SystemEntities = {
             removePreviousFile:
                 name: 'removePreviousFile', label: '自动删除之前的文件', type: 'Boolean', inputType: "Check"
                 hideInListPage: true
+            fileMaxSize:
+                name: 'fileMaxSize', label: '文件大小限制（字节）', type: 'Int', inputType: "Int"
+                hideInListPage: true
             fastSearch:
                 name: 'fastSearch', label: '支持快速搜索', type: 'Boolean', inputType: "Check"
     }
@@ -295,6 +298,9 @@ SystemEntities = {
                 hideInListPage: true
             optionWidth:
                 name: 'optionWidth', label: '选项宽度', type: 'Int', inputType: "Int"
+                hideInListPage: true
+            fileMaxSize:
+                name: 'fileMaxSize', label: '文件大小限制（字节）', type: 'Int', inputType: "Int"
                 hideInListPage: true
     }
     F_MongoIndex: {

@@ -2,7 +2,10 @@ exports.serverPort = 7090
 exports.cookieKey = ""
 exports.serverJadePath = ""
 exports.uploadPath = ""
+
 exports.httpBodyMaxFieldsSize = 6 * 1024 * 1024
+exports.fileDefaultMaxSize = 6 * 1024 * 1024
+exports.imageDefaultMaxSize = 2 * 1024 * 1024
 
 exports.sessionExpireAtServer = 1000 * 60 * 60 * 24 * 15; #  15 day
 exports.usernameFields = ['username']
@@ -24,3 +27,5 @@ exports.urlPrefix = null
 exports.errorCatcher = null
 
 exports.fileDownloadPrefix = '/r/'
+
+exports.elasticSearchEndpoint = ''
