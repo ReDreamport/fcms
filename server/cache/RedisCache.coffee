@@ -45,7 +45,8 @@ exports.gUnset = (keys, lastKeys)->
         keys = yield Redis.client.keysAsync key
 
     log.debug 'unset redis keys', keys
-    yield Redis.client.delAsync keys
+
+    yield Redis.client.delAsync keys if keys.length
 
 test = ->
     log.config({})
@@ -57,5 +58,3 @@ test = ->
 
         yield from exports.gUnset(["a"], [1, 2, 3, 4])
     ).catch (e)-> log.system.error e, 'test'
-
-test()

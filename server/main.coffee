@@ -8,6 +8,7 @@ config = require './config'
 
 Mongo = require './storage/Mongo'
 Mysql = require './storage/Mysql'
+Redis = require './storage/Redis'
 
 WebServer = require './web/WebServer'
 
@@ -24,9 +25,8 @@ gStart = (appConfig, addRouteRules)->
     Mongo.init()
     Mysql.init()
 
-    if config.cache == 'redis'
-        Redis = require './storage/Redis'
-        Redis.init()
+    if config.cluster
+        yield from Redis.gInit()
 
     # 元数据
     Meta = require './Meta'
@@ -66,9 +66,8 @@ gStop = ->
 
     #  TODO yield from require('./service/PromotionService').gPersist()
 
-    if config.cache == 'redis'
-        Redis = require './storage/Redis'
-        Redis.dispose()
+    if config.cluster
+        yield from Redis.gDispose()
 
     yield from Mongo.gDispose()
     yield from Mysql.gDispose()

@@ -1,9 +1,7 @@
 config = require '../config'
 log = require '../log'
 
-log.system.info 'cache: ' + config.cache
-
-module.exports = if config.cache == 'redis'
+module.exports = if config.cluster
     require('./RedisCache')
 else
     require('./MemoryCache')

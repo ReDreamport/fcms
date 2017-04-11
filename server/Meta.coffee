@@ -7,6 +7,7 @@ util = require './util'
 log = require './log'
 
 Mongo = require './storage/Mongo'
+Redis = require './storage/Redis'
 
 exports.DB = {mongo: 'mongodb', mysql: 'mysql', none: 'none'}
 
@@ -36,7 +37,16 @@ isDateOrTimeType = (fieldType)-> fieldType == "Date" || fieldType == "Time" || f
 
 entities = null
 views = null
-enhancedViewMetaCache = {}
+enhancedViewMetaCache = null
+
+MetaStoreId = new ObjectId().toString()
+
+Redis.subscribe 'MetaChange', (metaStoreId)->
+    return unless metaStoreId == MetaStoreId
+
+    log.system.info 'ON MetaChange'
+
+    yield from exports.gLoad()
 
 # 获取实体或视图（合并后的视图）
 exports.getEntityMeta = (name)-> entities[name] || enhancedViewMetaCache[name]
@@ -50,15 +60,26 @@ exports.getViews = -> views
 # 前端使用的元数据
 exports.getMetaForFront = -> {entities: entities, views: enhancedViewMetaCache}
 
-exports.gLoad = ()->
-    yield from gLoadMeta()
-
+exports.gLoad = ->
     SystemMeta = require('./SystemMeta')
-    SystemEntities = SystemMeta.SystemEntities
-    SystemViews = SystemMeta.SystemViews
 
-    entities[k] = v for k, v of SystemEntities
-    views[k] = v for k, v of SystemViews
+    db = yield from Mongo.mongo.gDatabase()
+    c = db.collection 'F_EntityMeta'
+    entitiesList = yield c.find({}).toArray()
+
+    c = db.collection 'F_EntityViewMeta'
+    viewsList = yield c.find({}).toArray()
+
+    # 下面没有异步操作
+
+    entities = {}
+    entities[e.name] = e for e in entitiesList
+
+    views = {}
+    views[v.name] = v for v in viewsList
+
+    entities[k] = v for k, v of SystemMeta.SystemEntities
+    views[k] = v for k, v of SystemMeta.SystemViews
 
     enhanceViews()
 
@@ -76,12 +97,16 @@ exports.gSaveEntityMeta = (entityName, entityMeta)->
 
     enhanceViews()
 
+    yield from Redis.gPublish 'MetaChange', MetaStoreId
+
 exports.gRemoveEntityMeta = (entityName)->
     db = yield from Mongo.mongo.gDatabase()
     c = db.collection 'F_EntityMeta'
     yield c.removeOne({name: entityName})
 
     delete entities[entityName]
+
+    yield from Redis.gPublish 'MetaChange', MetaStoreId
 
 exports.gSaveViewMeta = (viewName, viewMeta)->
     viewMeta._modifiedOn = new Date()
@@ -94,6 +119,8 @@ exports.gSaveViewMeta = (viewName, viewMeta)->
 
     enhanceViews()
 
+    yield from Redis.gPublish 'MetaChange', MetaStoreId
+
 exports.gRemoveViewMeta = (viewName)->
     db = yield from Mongo.mongo.gDatabase()
     c = db.collection 'F_EntityViewMeta'
@@ -102,18 +129,7 @@ exports.gRemoveViewMeta = (viewName)->
     delete views[viewName]
     delete enhancedViewMetaCache[viewName]
 
-gLoadMeta = ->
-    db = yield from Mongo.mongo.gDatabase()
-    c = db.collection 'F_EntityMeta'
-    entitiesList = yield c.find({}).toArray()
-    entities = {}
-    for e in entitiesList
-        entities[e.name] = e
-
-    c = db.collection 'F_EntityViewMeta'
-    viewsList = yield c.find({}).toArray()
-    views = {}
-    views[v.name] = v for v in viewsList
+    yield from Redis.gPublish 'MetaChange', MetaStoreId
 
 # 补全视图的元数据
 enhanceViews = ->
@@ -150,7 +166,7 @@ exports.parseEntity = (entityInput, entityMeta)->
 
 # 将 HTTP 输入的查询条件中的值规范化
 exports.parseListQueryValue = (criteria, entityMeta)->
-    # 如果输入的值有问题，可能传递到下面的持久层，如 NaN, undefined, null
+# 如果输入的值有问题，可能传递到下面的持久层，如 NaN, undefined, null
     if criteria.relation
         for item in criteria.items
             exports.parseListQueryValue item, entityMeta

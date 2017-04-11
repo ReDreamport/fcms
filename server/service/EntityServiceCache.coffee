@@ -25,7 +25,8 @@ exports.gWithCache = (entityMeta, cacheId, gQuery)->
         return _.cloneDeep(cacheItem) if cacheItem? # 返回拷贝防止污染缓存
 
         freshValue = yield from gQuery()
-        # 这里 Null 值也进入缓存，防止 404 反复触发数据库查询
+        return freshValue unless freshValue?
+
         yield from Cache.gSetObject keys, freshValue
         _.cloneDeep(freshValue) # 返回拷贝防止污染缓存
 
