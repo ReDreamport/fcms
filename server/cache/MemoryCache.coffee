@@ -1,23 +1,29 @@
+_ = require 'lodash'
+Promise = require 'bluebird'
+
 cache = {}
 
-get = (key, alternative) -> cache ? alternative
+gGet = (keys, alternative) -> yield Promise.resolve(_.get(cache, keys) ? alternative)
 
-set = (key, value)-> cache[key] = value
+gSet = (keys, value)-> yield Promise.resolve(_.set(cache, keys, value))
 
-exports.getString = get
-exports.setString = set
+exports.gGetString = gGet
+exports.gSetString = gSet
 
-exports.getCachedString = get
-exports.setCachedString = set
+exports.gGetCachedString = gGet
+exports.gSetCachedString = gSet
 
-exports.getNumber = get
-exports.setNumber = set
+exports.gGetObject = gGet
+exports.gSetObject = gSet
 
-exports.getBoolean = get
-exports.setBoolean = set
-
-exports.getObject = get
-exports.setObject = set
-
+exports.gUnset = (keys, lastKeys)->
+    if lastKeys?.length
+        keys = _.clone(keys)
+        keysLength = keys.length
+        for lastKey in lastKeys
+            keys[keysLength] = lastKey
+            _.unset cache, keys
+    else
+        _.unset cache, keys
 
 

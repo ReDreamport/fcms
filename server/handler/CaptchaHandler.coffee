@@ -1,7 +1,8 @@
-table = {}
 chance = new require('chance')()
 
-exports.generate = (next)->
+Cache = require '../cache/Cache'
+
+exports.gGenerate = (next)->
     simpleCaptcha = require('simple-captcha')
     captcha = simpleCaptcha.create({width: 100, height: 40})
     text = captcha.text()
@@ -9,14 +10,16 @@ exports.generate = (next)->
 
     id = chance.hash()
     @cookies.set('captcha_id', id, {signed: true, httpOnly: true})
-    table[id] = text
+    yield from Cache.gSetString ['captcha', id], text
 
     @set 'X-Captcha-Id', id
     @body = captcha.buffer('image/png')
     @type = 'image/png'
-    yield next
 
-exports.check = (id, text)-> id? and text? and table[id] and table[id] == text
+exports.gCheck = (id, text)->
+    return false unless id? and text?
+    expected = yield from Cache.gGetString ['captcha', id]
+    expected == text
 
-exports.clearById = (id)-> delete table[id]
+exports.gClearById = (id)-> yield from Cache.gUnset ['captcha'], [id]
 

@@ -1,6 +1,5 @@
 config = require '../config'
 
-
 jadeLocals = {}
 exports.jadeLocals = jadeLocals
 

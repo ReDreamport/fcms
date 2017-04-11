@@ -4,20 +4,19 @@ request = require 'request'
 requestPost = Promise.promisify request.post.bind(request)
 
 error = require '../error'
-
+Cache = require '../cache/Cache'
 MailService = require '../service/MailService'
-
-securityCodes = {}
 
 # 验证验证码
 exports.check = (target, code)->
-    expectedCode = securityCodes[target]
+    expectedCode = yield from Cache.gGetString ['securityCodes', target]
+
     unless expectedCode? && expectedCode.code == code
         throw new error.UserError("SecurityCodeNotMatch")
     if new Date().getTime() - expectedCode.sendTime > 15 * 60 * 1000
         throw new error.UserError("SecurityCodeExpired") # 过期
 
-    delete securityCodes[target]
+    yield from Cache.gUnset ['securityCodes'], [target]
 
 # 发送验证码到邮箱
 exports.gSendSecurityCodeToEmail = (toEmail, subject, purpose)->
@@ -49,5 +48,5 @@ gSendSecurityCodeToPhone = (phone, purpose)->
 
 _generateSecurityCode = (address) ->
     code = chance.string length: 6, pool: '0123456789'
-    securityCodes[address] = {code: code, sendTime: new Date().getTime()}
+    yield from Cache.gSetString ['securityCodes', target], {code: code, sendTime: new Date().getTime()}
     code

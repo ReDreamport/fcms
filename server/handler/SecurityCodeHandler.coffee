@@ -11,12 +11,12 @@ exports.gSendSignUpCodeToPhone = ->
 
     throw new error.UserError('CaptchaWrong') unless captchaId and captchaText
 
-    unless CaptchaHandler.check(captchaId, captchaText)
-        CaptchaHandler.clearById(captchaId)
+    unless yield from CaptchaHandler.gCheck(captchaId, captchaText)
+        yield from CaptchaHandler.gClearById(captchaId)
         throw new error.UserError('CaptchaWrong')
 
     # 现在是不管验证码是否输入正确了一律只能用一次的策略
-    CaptchaHandler.clearById(captchaId)
+    yield from CaptchaHandler.gClearById(captchaId)
 
     phone = @params.phone
     return @status = 400 unless phone
@@ -31,12 +31,12 @@ exports.gSendSignUpCodeToEmail = ->
 
     throw new error.UserError('CaptchaWrong') unless captchaId and captchaText
 
-    unless CaptchaHandler.check(captchaId, captchaText)
-        CaptchaHandler.clearById(captchaId)
+    unless yield from CaptchaHandler.gCheck(captchaId, captchaText)
+        yield from CaptchaHandler.gClearById(captchaId)
         throw new error.UserError('CaptchaWrong')
 
     # 现在是不管验证码是否输入正确了一律只能用一次的策略
-    CaptchaHandler.clearById(captchaId)
+    yield from CaptchaHandler.gClearById(captchaId)
 
     email = @params.email
     return @status = 400 unless email

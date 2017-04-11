@@ -3,6 +3,7 @@ log = require './log'
 Promise = require 'bluebird'
 co = require 'co'
 xml2js = require("xml2js")
+ObjectId = require('mongodb').ObjectId
 
 log = require './log'
 
@@ -151,3 +152,45 @@ exports.addEqualsConditionToListCriteria = (query, field, value)->
                 query.criteria = {__type: 'relation', relation: 'and', items: [criteria, item]}
     else
         query.criteria = {"#{field}": value}
+
+exports.jsObjectToTypedJSON = (jsObject)->
+    return jsObject unless jsObject?
+
+    addType = (value)->
+        if _.isDate value
+            {_type: 'Date', _value: value.getTime()}
+        else if value instanceof ObjectId
+            {_type: 'ObjectId', _value: value.toString()}
+        else if _.isObject(value)
+            {_type: 'json', _value: exports.jsObjectToTypedJSON(value)}
+        else
+            {_type: '', _value: value}
+
+    if _.isArray jsObject
+        addType(value) for value in jsObject
+    else if _.isObject jsObject
+        jsonObject = {}
+        jsonObject[key] = addType(value) for key, value of jsObject
+        jsonObject
+    else
+        jsObject
+
+exports.typedJSONToJsObject = (jsonObject)->
+    return jsonObject unless jsonObject?
+
+    removeType = (value)->
+        switch value._type
+            when 'Date' then new Date(value._value)
+            when 'ObjectId' then new ObjectId value._value
+            when 'json' then exports.typedJSONToJsObject(value._value)
+            else
+                value._value
+
+    if _.isArray jsonObject
+        removeType(value) for value in jsonObject
+    else if _.isObject jsonObject
+        jsObject = {}
+        jsObject[key] = removeType(value) for key, value of jsonObject
+        jsObject
+    else
+        jsonObject

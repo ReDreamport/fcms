@@ -38,11 +38,11 @@
         "mongodb": "^2.2.10",
         "mysql": "^2.11.1",
         "nodemailer": "^2.6.4",
-        "npm": "^3.10.9",
         "object-sizeof": "^1.1.1",
+        "redis": "^2.7.1",
         "request": "^2.78.0",
         "server-destroy": "^1.0.1",
-        "xml2js": "^0.4.17",
-        "simple-captcha": "^0.1.10"
+        "simple-captcha": "^0.1.10",
+        "xml2js": "^0.4.17"
     }
 }

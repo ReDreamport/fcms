@@ -5,48 +5,50 @@ log = require '../log'
 Meta = require '../Meta'
 config = require '../config'
 util = require '../util'
+Cache = require '../cache/Cache'
 
 EntityService = require '../service/EntityService'
 
 PermissionService = require './PermissionService'
 
-userCache = {}
-roleCache = {}
-anonymousRole = null
+cacheKeyRoot = "user"
 
 exports.init = ->
     EntityServiceCache = require '../service/EntityServiceCache'
     EntityServiceCache.onUpdatedOrRemoved (ctx, entityMeta, ids)=>
         if entityMeta.name == 'F_User'
             if ids
-                delete userCache[id] for id in ids
+                yield from Cache.gUnset [cacheKeyRoot, 'user'], ids
             else
-                userCache = {}
+                yield from Cache.gUnset [cacheKeyRoot, 'user']
         else if entityMeta.name == 'F_UserRole'
-            anonymousRole = null
+            yield from Cache.gUnset [cacheKeyRoot], ['anonymousRole']
+
             if ids
-                delete roleCache[id] for id in ids
+                yield from Cache.gUnset [cacheKeyRoot, 'role'], ids
             else
-                roleCache = {}
+                yield from Cache.gUnset [cacheKeyRoot, 'role']
 
 exports.gUserById = (id)->
-    user = userCache[id]
+    user = yield from Cache.gGetObject [cacheKeyRoot, 'user', id]
     return user if user
 
     user = yield from EntityService.gFindOneByCriteria({}, 'F_User', {_id: id})
     if user
-        userCache[id] = user
         PermissionService.permissionArrayToMap(user.acl)
+        yield from Cache.gSetObject [cacheKeyRoot, 'user', id], user
+
     user
 
 exports.gRoleById = (id)->
-    role = roleCache[id]
+    role = yield from Cache.gGetObject [cacheKeyRoot, 'role', id]
     return role if role
 
     role = yield from EntityService.gFindOneByCriteria({}, 'F_UserRole', {_id: id})
     if role
-        roleCache[id] = role
         PermissionService.permissionArrayToMap(role.acl)
+        yield from Cache.gSetObject [cacheKeyRoot, 'role', id], role
+
     role
 
 exports.gRoleIdByName = (name)->
@@ -74,15 +76,16 @@ exports.gAddRemoveRoleNameToUser = (userId, addRoles, removeRoles)->
         roles = roles2
 
     yield from EntityService.gUpdateOneByCriteria({}, 'F_User', {_id: userId}, {roles})
-    delete userCache[userId]
+    yield from Cache.gUnset [cacheKeyRoot, 'user'], [userId]
 
 exports.gGetAnonymousRole = ->
+    anonymousRole = yield from Cache.gGetObject [cacheKeyRoot, 'anonymousRole']
     return anonymousRole if anonymousRole
 
     role = yield from EntityService.gFindOneByCriteria({}, 'F_UserRole', {name: 'anonymous'})
     if role
-        anonymousRole = role
         PermissionService.permissionArrayToSet(role.acl)
+        yield from Cache.gSetObject [cacheKeyRoot, 'anonymousRole'], role
     role
 
 exports.gAuthToken = (userId, userToken)->
@@ -151,7 +154,7 @@ exports.gChangePhone = (userId, phone)->
 
     yield from EntityService.gUpdateOneByCriteria({}, 'F_User', {_id: userId, _version: user._version}, {phone: phone})
 
-    delete userCache[userId]
+    yield from Cache.gUnset [cacheKeyRoot, 'user'], [userId]
 
 # 修改绑定的邮箱
 exports.gChangeEmail = (userId, email)->
@@ -161,7 +164,7 @@ exports.gChangeEmail = (userId, email)->
 
     yield from EntityService.gUpdateOneByCriteria({}, 'F_User', {_id: userId, _version: user._version}, {email: email})
 
-    delete userCache[userId]
+    yield from Cache.gUnset [cacheKeyRoot, 'user'], [userId]
 
 # 修改密码
 exports.gChangePassword = (userId, oldPassword, newPassword)->

@@ -55,7 +55,7 @@ exports.addCommonRouteRules = (rrr)->
 
     CaptchaHandler = require '../handler/CaptchaHandler'
     # 请求一个图形验证码
-    rrr.get '/captcha', {}, CaptchaHandler.generate
+    rrr.get '/captcha', {}, CaptchaHandler.gGenerate
 
     # ======================================
     # 实体 CRUD

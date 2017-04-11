@@ -9,8 +9,6 @@ config = require './config'
 Mongo = require './storage/Mongo'
 Mysql = require './storage/Mysql'
 
-EntityServiceCache = require './service/EntityServiceCache'
-
 WebServer = require './web/WebServer'
 
 webStarted = false
@@ -26,6 +24,10 @@ gStart = (appConfig, addRouteRules)->
     Mongo.init()
     Mysql.init()
 
+    if config.cache == 'redis'
+        Redis = require './storage/Redis'
+        Redis.init()
+
     # 元数据
     Meta = require './Meta'
     yield from Meta.gLoad()
@@ -40,8 +42,6 @@ gStart = (appConfig, addRouteRules)->
 
         MysqlIndex = require './storage/MysqlIndex'
         yield from MysqlIndex.gSyncWithMeta(exports.mysql)
-
-    EntityServiceCache.startCleanTimer()
 
     # 用户
     UserService = require './security/UserService'
@@ -64,9 +64,11 @@ gStart = (appConfig, addRouteRules)->
 gStop = ->
     log.system.info 'Disposing all other resources...'
 
-    EntityServiceCache.stopCleanTimer()
-
     #  TODO yield from require('./service/PromotionService').gPersist()
+
+    if config.cache == 'redis'
+        Redis = require './storage/Redis'
+        Redis.dispose()
 
     yield from Mongo.gDispose()
     yield from Mysql.gDispose()
