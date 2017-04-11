@@ -3,6 +3,6 @@ include ../FieldItemMixin
 +FieldItem(field, fClass)
     -var m = value && moment(value)
     .fw-field-item-input.input-date(class=fClass)
-        input.date-hour(type="number", disabled=field.readonly, value=m && m.hour())
+        input.date-hour(type="number", value=m && m.hour())
         span :
-        input.date-minute(type="number", disabled=field.readonly, value=m && m.minute())
+        input.date-minute(type="number", value=m && m.minute())

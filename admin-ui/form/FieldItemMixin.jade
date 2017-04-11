@@ -1,5 +1,5 @@
 mixin FieldItem(field, fClass)
     .fw-field-item(class=fClass)
-        if field.multiple && !field.readonly
+        if field.multiple
             a.fw-field-remove-item.iconfont.icon-delete.fw-icon-button(href="javascript:")
         block

@@ -3,26 +3,25 @@
         .field-label=field.label
         .field-actions
             if field.inputType == 'File' || field.inputType == 'Image'
-                if !field.readonly
-                    a.select-file.fw-icon-button.iconfont.icon-file(href="javascript:")
-                        // IE 的文件控件安全限制
-                        input.file.file-field(name='file' + F.uniqueId(), type="file", multiple=true)
+                a.select-file.fw-icon-button.iconfont.icon-file(href="javascript:")
+                    // IE 的文件控件安全限制
+                    input.file.file-field(name='file' + F.uniqueId(), type="file", multiple=true)
                 if field.multiple
                     a.fw-remove-all-file.fw-icon-button.iconfont.icon-clear(href="javascript:")
                     a.fw-hide-all-file.fw-icon-button.iconfont.icon-hide(href="javascript:")
+                else
             else if field.inputType == 'PopupComponent'
-                if field.multiple && !field.readonly
+                if field.multiple
                     a.fw-add-item-component.fw-icon-button.iconfont.icon-add(href="javascript:")
                     a.fw-remove-all-item-component.fw-icon-button.iconfont.icon-clear(href="javascript:")
                     a.fw-hide-all-item-component.fw-icon-button.fa.iconfont.icon-hide(href="javascript:")
             else if field.inputType == 'Reference'
-                if !field.readonly
-                    a.fw-add-ref.fw-icon-button.iconfont.icon-select(href="javascript:")
-                    a.fw-remove-all-ref.fw-icon-button.iconfont.icon-clear(href="javascript:")
+                a.fw-add-ref.fw-icon-button.iconfont.icon-select(href="javascript:")
+                a.fw-remove-all-ref.fw-icon-button.iconfont.icon-clear(href="javascript:")
                 if field.multiple
                     a.fw-hide-all-ref.fw-icon-button.iconfont.icon-hide(href="javascript:")
             else if field.inputType != 'CheckList'
-                if field.multiple && !field.readonly
+                if field.multiple
                     a.fw-field-add-item.fw-icon-button.iconfont.icon-add(href="javascript:")
                     a.fw-field-remove-all-items.fw-icon-button.iconfont.icon-clear(href="javascript:")
                     a.fw-field-hide-items.fw-icon-button.iconfont.icon-hide(href="javascript:")
