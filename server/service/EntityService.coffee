@@ -96,10 +96,10 @@ exports.gRecoverMany = (conn, entityName, ids)->
 exports.gFindOneById = (conn, entityName, id, options)->
     entityMeta = Meta.getEntityMeta(entityName)
 
-    cacheId = "Id|" + id + "|" + options?.repo + "|" + options?.includedFields?.join(",")
+    cacheId = id + "|" + options?.repo + "|" + options?.includedFields?.join(",")
     criteria = {_id: id}
 
-    yield from EntityCache.gWithCache entityMeta, cacheId, ->
+    yield from EntityCache.gWithCache entityMeta, ["Id", cacheId], ->
         if entityMeta.db == Meta.DB.mysql
             yield from MysqlService.gFindOneByCriteria conn, entityMeta, criteria, options
         else if entityMeta.db == Meta.DB.mongo
@@ -108,9 +108,9 @@ exports.gFindOneById = (conn, entityName, id, options)->
 exports.gFindOneByCriteria = (conn, entityName, criteria, options)->
     entityMeta = Meta.getEntityMeta(entityName)
 
-    cacheId = "Other|OneByCriteria|" + options?.repo + "|" + JSON.stringify(criteria) + "|" + options?.includedFields?.join(",")
+    cacheId = "OneByCriteria|" + options?.repo + "|" + JSON.stringify(criteria) + "|" + options?.includedFields?.join(",")
 
-    yield from EntityCache.gWithCache entityMeta, cacheId, ->
+    yield from EntityCache.gWithCache entityMeta, ["Other", cacheId], ->
         if entityMeta.db == Meta.DB.mysql
             yield from MysqlService.gFindOneByCriteria conn, entityMeta, criteria, options
         else if entityMeta.db == Meta.DB.mongo
@@ -127,9 +127,9 @@ exports.gList = (conn, entityName, {repo, criteria, pageNo, pageSize, sort, incl
     sortString = util.objectToKeyValuePairString(sort)
     includedFieldsString = includedFields?.join(',')
 
-    cacheId = "Other|List|#{repo}|#{pageNo}|#{pageSize}|#{criteriaString}|#{sortString}|#{includedFieldsString}"
+    cacheId = "List|#{repo}|#{pageNo}|#{pageSize}|#{criteriaString}|#{sortString}|#{includedFieldsString}"
 
-    yield from EntityCache.gWithCache entityMeta, cacheId, ->
+    yield from EntityCache.gWithCache entityMeta, ["Other", cacheId], ->
         query = {repo, entityMeta, criteria, includedFields, sort, pageNo, pageSize, withoutTotal}
         if entityMeta.db == Meta.DB.mysql
             yield from MysqlService.gList conn, query

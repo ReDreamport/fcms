@@ -339,3 +339,7 @@ exports.removeNoEditFields = (entityMeta, user, entity)->
         for field in removedFieldNames
             delete entity[field]
             false
+
+exports.gViewMemoryCache = ->
+    @body = require('../cache/MemoryCache').cache
+    yield return

@@ -12,6 +12,7 @@ actions =
     RichTextUpload: '富文本编辑器文件上传'
     ES: '配置搜索引擎'
     Promotion: '推广活动'
+    ViewCache: '查看缓存'
 
 Meta.actions[k] = v for k,v of actions
 
@@ -73,6 +74,8 @@ exports.addCommonRouteRules = (rrr)->
 
     rrr.put '/entity/filters', {action: 'PreFilters'}, EntityHandler.gSaveFilters
     rrr.del '/entity/filters', {action: 'PreFilters'}, EntityHandler.gRemoveFilters
+
+    rrr.get '/cache/memory', {action: 'ViewCache'}, EntityHandler.gViewMemoryCache
 
     # ======================================
     # 文件
