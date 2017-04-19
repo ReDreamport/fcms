@@ -1,6 +1,6 @@
 mixin listFields(fieldNames, entityValue, entityMeta)
-    td(style={width: '100px', 'text-align': 'center'})
-        a.to-view-entity(href="javascript:", entityName=entityMeta.name, _id=entityValue._id)=F.digestId(entityValue._id)
+    td(style="width: 40px; text-align: center; padding: 0px;")
+        a.to-view-entity(href="javascript:", entityName=entityMeta.name, _id=entityValue._id) 详情
     each fn in fieldNames
         -var fm = entityMeta.fields[fn]
         td(class="col-" + fn, style=F.tdStyleOfField(fm))

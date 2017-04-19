@@ -80,10 +80,8 @@ SystemEntities = {
                 name: 'noEdit', label: '禁止编辑', type: 'Boolean', inputType: "Check"
             noDelete:
                 name: 'noDelete', label: '禁止删除', type: 'Boolean', inputType: "Check"
-            entityNumMin:
-                name: 'entityNumMin', label: '实体数量下限', type: 'Int', inputType: "Int"
-            entityNumMax:
-                name: 'entityNumMax', label: '实体数量上限', type: 'Int', inputType: "Int"
+            singleton:
+                name: 'singleton', label: '单例', type: 'Boolean', inputType: "Check"
             digestFields:
                 name: 'digestFields', label: '摘要字段', type: 'String', inputType: "Text"
             mongoIndexes:
@@ -94,6 +92,9 @@ SystemEntities = {
                 inputType: "PopupComponent", multiple: true
             editEnhanceFunc:
                 name: 'editEnhanceFunc', label: '编辑增强脚本', type: 'String', inputType: "Text"
+                hideInListPage: true
+            viewEnhanceFunc:
+                name: 'viewEnhanceFunc', label: '详情增强脚本', type: 'String', inputType: "Text"
                 hideInListPage: true
             fields:
                 name: 'fields', label: '字段列表', type: 'Component', refEntity: "F_FieldMeta", inputType: "PopupComponent",
