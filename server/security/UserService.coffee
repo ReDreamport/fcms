@@ -84,7 +84,7 @@ exports.gGetAnonymousRole = ->
 
     role = yield from EntityService.gFindOneByCriteria({}, 'F_UserRole', {name: 'anonymous'})
     if role
-        PermissionService.permissionArrayToSet(role.acl)
+        PermissionService.permissionArrayToMap(role.acl)
         yield from Cache.gSetObject [cacheKeyRoot, 'anonymousRole'], role
     role
 
