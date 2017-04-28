@@ -29,3 +29,10 @@ exports.errorCatcher = null
 exports.fileDownloadPrefix = '/r/'
 
 exports.elasticSearchEndpoint = ''
+
+exports.asSSOServer = false
+
+exports.asSSOClient = false
+
+exports.cluster = false
+exports.workerNum = 2

@@ -7,10 +7,6 @@ ObjectId = require('mongodb').ObjectId
 
 log = require './log'
 
-jsonfile = require 'jsonfile'
-exports.pReadJsonFile = Promise.promisify jsonfile.readFile.bind(jsonfile)
-exports.pWriteJsonFile = Promise.promisify jsonfile.writeFile.bind(jsonfile)
-
 exports.objectToKeyValuePairString = (obj)->
     obj && _.join(("#{k}=#{v}" for k,v of obj), "&") || ""
 

@@ -3,7 +3,7 @@
 # 如 abc/def/:1/ghi 比 abc/def/:1/:2 胜出。
 
 compose = require 'koa-compose'
-path = require 'path'
+urlLib = require 'url'
 
 _ = require 'lodash'
 log = require '../log'
@@ -33,13 +33,22 @@ addRouteRules = (method, url, info, handlers...)->
     route = {method, url, info, handler, indexToVariable: {}}
     routes[key] = route
 
-
 class RouteRuleRegisters
-    constructor: (@urlPrefix, @errorCatcher)->
-        throw new Error 'urlPrefix cannot be empty' unless @urlPrefix
+    constructor: (urlPrefix, @errorCatcher)->
+        throw new Error 'urlPrefix cannot be empty' unless urlPrefix
+        # 去掉后缀的斜线
+        urlPrefix = urlPrefix.substring(0, urlPrefix.length - 1) if urlPrefix[urlPrefix.length - 1] == '/'
+        @urlPrefix = urlPrefix
 
     add: (method, url, info, handlers...)->
-        url = path.normalize(@urlPrefix + "/" + url)
+        # 去掉 url 开头的斜线
+        url = if url == '' || url == '/'
+            ''
+        else if url[0] == '/'
+            url.substring(1)
+        url = @urlPrefix + "/" + url
+        # log.debug 'url', url
+
         info = info || {}
         info.errorCatcher = @errorCatcher
         info.urlPrefix = @urlPrefix
@@ -90,6 +99,7 @@ exports.refresh = ->
                     routeWeight = routeWeight + (1 << (partsLength - index - 1))
             route.routeWeight = routeWeight
 
+    # log.debug JSON.stringify(routes, null, 4)
     log.system.info 'routes: ' + _.size(routes)
 
 # 所有匹配 part 单词或变量的路由的 URL
@@ -107,6 +117,8 @@ collectRouteUrls = (mOfIndex, part)->
 
 match = (method, path, params)->
     method = method.toLowerCase()
+
+    log.debug "path", path
 
     parts = splitPath path
     if path == '' or path == '/'

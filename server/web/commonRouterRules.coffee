@@ -51,8 +51,8 @@ exports.addCommonRouteRules = (rrr)->
     SecurityCodeHandler = require '../handler/SecurityCodeHandler'
 
     # 发送注册验证码到手机和邮箱
-    rrr.post 'api/security-code/phone/:phone', {}, SecurityCodeHandler.gSendSignUpCodeToPhone
-    rrr.post 'api/security-code/email/:email', {}, SecurityCodeHandler.gSendSignUpCodeToEmail
+    rrr.post '/api/security-code/phone/:phone', {}, SecurityCodeHandler.gSendSignUpCodeToPhone
+    rrr.post '/api/security-code/email/:email', {}, SecurityCodeHandler.gSendSignUpCodeToEmail
 
     CaptchaHandler = require '../handler/CaptchaHandler'
     # 请求一个图形验证码

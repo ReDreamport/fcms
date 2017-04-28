@@ -5,12 +5,18 @@
     const gulputil = require('./gulputil');
     const util = new gulputil.Util(gulp);
 
+    util.watchTask('package', '*.*', function () {
+        util.copy('package.json', 'build/server');
+        util.copy('README.md', 'build/server');
+    });
+
 // ===================================================================
 // 服务器
 // ===================================================================
 
     util.watchTask('fcms-server', 'server/**/**.coffee', function () {
         util.compileServerCoffee('server/**/**.coffee', '../node_modules/fcms');
+        util.compileServerCoffee('server/**/**.coffee', 'build/server');
     });
 
 // ===================================================================
