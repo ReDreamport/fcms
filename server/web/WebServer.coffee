@@ -16,33 +16,24 @@ gCatchError = (next)->
     else
         try
             yield next
-
-            if @status == 404
-                @render 'e404'
         catch e
             if e instanceof error.Error401
                 @status = 401
                 if @route.info?.isPage
-                    @redirect 'sign-in'
+                    len = config.urlPrefix.length + 1
+                    url = @request.originalUrl.substring(len)
+                    @redirect 'sign-in?callback=' + encodeURIComponent(url)
                 else
                     @body = e.describe()
             else if e instanceof error.Error403
                 @status = 403
-                if @route.info?.isPage
-                    @render 'e403'
-                else
-                    @body = e.describe()
+                @body = e.describe()
             else if e instanceof error.UserError
                 @status = 400
-                if @route.info?.isPage
-                    @render 'e400'
-                else
-                    @body = e.describe()
+                @body = e.describe()
             else
                 @status = 500
                 log.system.error e, e.message, 'catch all'
-                if @route.info?.isPage
-                    @render 'e500'
 
 exports.gStart = ->
     koa = require 'koa'

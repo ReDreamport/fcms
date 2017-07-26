@@ -10,6 +10,8 @@ Interceptor = require './EntityInterceptor'
 
 Mysql = require '../storage/Mysql'
 
+Cache = require '../cache/Cache'
+
 exports.gCreateEntity = ->
     entityName = @params.entityName
     entityMeta = Meta.getEntityMeta(entityName)
@@ -343,3 +345,7 @@ exports.removeNoEditFields = (entityMeta, user, entity)->
 exports.gViewMemoryCache = ->
     @body = require('../cache/MemoryCache').cache
     yield return
+
+exports.gClearAllCache = ->
+    yield from Cache.gClearAllCache()
+    @status = 204

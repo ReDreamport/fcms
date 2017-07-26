@@ -48,6 +48,10 @@ exports.gUnset = (keys, lastKeys)->
 
     yield Redis.client.delAsync keys if keys.length
 
+exports.gClearAllCache = ->
+    keys = yield Redis.client.keysAsync "*"
+    yield Redis.client.delAsync keys if keys.length
+
 test = ->
     log.config({})
     Redis.init()

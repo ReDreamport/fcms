@@ -13,13 +13,14 @@ actions =
     ES: '配置搜索引擎'
     Promotion: '推广活动'
     ViewCache: '查看缓存'
+    ClearEntityCache: '清除实体缓存'
 
 Meta.actions[k] = v for k,v of actions
 
 exports.addCommonRouteRules = (rrr)->
-# ======================================
-# 元数据管理
-# ======================================
+    # ======================================
+    # 元数据管理
+    # ======================================
     MetaHandler = require('../handler/MetaHandler')
 
     rrr.get '/meta', {action: 'ReadMeta'}, MetaHandler.gGetAllMeta
@@ -77,6 +78,8 @@ exports.addCommonRouteRules = (rrr)->
 
     rrr.get '/cache/memory', {action: 'ViewCache'}, EntityHandler.gViewMemoryCache
 
+    rrr.del '/cache', {action: 'ClearEntityCache'}, EntityHandler.gClearAllCache
+
     # ======================================
     # 文件
     # ======================================
@@ -86,12 +89,12 @@ exports.addCommonRouteRules = (rrr)->
     rrr.post '/file2', {action: 'Upload'}, UploadHandler.gUpload2 # transport
     rrr.post '/rich-text-file', {action: 'RichTextUpload'}, UploadHandler.gUploadForRichText
 
-# ======================================
-# 搜索引擎
-# ======================================
+    # ======================================
+    # 搜索引擎
+    # ======================================
 
-#ElasticSearchController = require '../handler/ElasticSearchController'
-#rrr.post '/config-es', {action: 'ES'}, ElasticSearchController.gConfig
+    ElasticSearchController = require '../handler/ElasticSearchController'
+    rrr.post '/config-es', {action: 'ES'}, ElasticSearchController.gConfig
 
 # ======================================
 # 支付

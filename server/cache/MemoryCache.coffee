@@ -12,7 +12,7 @@ gGet = (keys, alternative) ->
     return r
 
 gSet = (keys, value)->
-# log.debug 'set memory cache', keys
+    # log.debug 'set memory cache', keys
     yield Promise.resolve(_.set(cache, keys, value))
 
 exports.gGetString = gGet
@@ -25,7 +25,7 @@ exports.gGetObject = gGet
 exports.gSetObject = gSet
 
 exports.gUnset = (keys, lastKeys)->
-# log.debug 'unset memory cache', keys, lastKeys
+    # log.debug 'unset memory cache', keys, lastKeys
     if lastKeys?.length
         keys = _.clone(keys)
         keysLength = keys.length
@@ -37,4 +37,8 @@ exports.gUnset = (keys, lastKeys)->
 
     yield return
 
-
+exports.gClearAllCache = ->
+    log.system.info("clear all cache / memory")
+    cache = {}
+    exports.cache = cache
+    yield return

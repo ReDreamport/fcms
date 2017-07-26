@@ -118,7 +118,7 @@ collectRouteUrls = (mOfIndex, part)->
 match = (method, path, params)->
     method = method.toLowerCase()
 
-    log.debug "path", path
+    # log.debug "path", path
 
     parts = splitPath path
     if path == '' or path == '/'
@@ -167,7 +167,6 @@ exports.parseRoute = (next)->
     else
         log.debug 'fail to match route,', {method: @request.method, path: path}
         @status = 404
-        @render 'e404'
 
 # 执行路由的处理器
 exports.handleRoute = (next)->
