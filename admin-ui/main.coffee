@@ -6,10 +6,7 @@ F.$mainPages = $('.main-pages')
 F.$mainOpened = $('.main-menu .open')
 
 $('.exit', F.$mainBody).on 'click', ->
-    q = F.api.post 'api/sign-out'
-    q.catch F.alertAjaxError
-    q.then ->
-        location.reload()
+    location.href = "/sso/client/sign-out?callback=#{encodeURIComponent(location.href)}"
 
 #=======================
 # 收起展开菜单
@@ -135,7 +132,7 @@ F.ping = (forced)->
     return pingPromise if pingPromise?
 
     F.logInit 'Ping...'
-    pingPromise = F.api.get 'api/ping'
+    pingPromise = F.api.get 'ping'
     pingPromise.then (user) ->
         F.logInit 'Ping Successfully'
         F.user = user

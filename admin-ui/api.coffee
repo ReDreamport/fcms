@@ -34,7 +34,10 @@ fail = (jqxhr)->
     console.log('Got Ajax fail ' + jqxhr.status)
     if jqxhr.status == 401
         console.log("401, to sign in")
-        F.toSignIn()
+        # F.toSignIn()
+        r = jqxhr.responseText && JSON.parse(jqxhr.responseText)
+        href = encodeURIComponent(location.href)
+        location.href = r.signInUrl + "?callback=#{href}"
     else if jqxhr.status == 403
         F.toastError '需要权限！'
 
